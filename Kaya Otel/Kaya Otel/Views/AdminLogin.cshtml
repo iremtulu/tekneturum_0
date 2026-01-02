@@ -1,0 +1,41 @@
+﻿@{
+    ViewData["Title"] = "Admin Girişi";
+}
+
+<style>
+    .admin-login-page {
+        min-height: calc(100vh - 140px); /* footer/privacy link en alta insin */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+    }
+
+    .admin-login-card {
+        width: 100%;
+        max-width: 360px;
+    }
+</style>
+
+<section class="admin-login-page">
+    <div class="card shadow-sm admin-login-card">
+        <div class="card-body">
+            <h2 class="h4 text-center mb-4">Admin Girişi</h2>
+            <form asp-action="Login" method="post" class="d-grid gap-3">
+                <div>
+                    <label class="form-label">Kullanıcı Adı</label>
+                    <input type="text" name="UserName" class="form-control" required />
+                </div>
+                <div>
+                    <label class="form-label">Şifre</label>
+                    <input type="password" name="Password" class="form-control" required />
+                </div>
+                <button type="submit" class="btn btn-primary">Giriş Yap</button>
+            </form>
+            @if (ViewBag.Hata != null)
+            {
+                <p class="text-danger text-center mt-3">@ViewBag.Hata</p>
+            }
+        </div>
+    </div>
+</section>

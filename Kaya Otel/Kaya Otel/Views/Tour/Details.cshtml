@@ -1,0 +1,40 @@
+@model Kaya_Otel.Models.Tour
+
+@{
+    ViewData["Title"] = Model.Name;
+}
+
+<section class="py-5">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-md-6">
+                <img src="@Model.ImageUrl" alt="@Model.Name" class="img-fluid rounded shadow-sm" />
+            </div>
+            <div class="col-md-6">
+                <span class="badge bg-primary text-uppercase">@Model.Category</span>
+                <h1 class="display-6 mt-2">@Model.Name</h1>
+                <p class="lead text-muted">@Model.Description</p>
+
+                <ul class="list-group mb-4">
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Tur Süresi</span>
+                        <strong>@Model.Duration.TotalHours.ToString("0") saat</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Maksimum Kapasite</span>
+                        <strong>@Model.Capacity kişi</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Tur Fiyatı</span>
+                        <strong>@Model.PricePerPerson.ToString("C0")</strong>
+                    </li>
+                </ul>
+
+                <a asp-controller="Booking" asp-action="Reserve" asp-route-tourId="@Model.Id" class="btn btn-primary btn-lg w-100">
+                    Rezervasyon Yap (Kapora %20)
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+

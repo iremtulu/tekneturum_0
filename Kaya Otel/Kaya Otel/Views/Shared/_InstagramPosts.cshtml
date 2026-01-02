@@ -1,0 +1,26 @@
+@model IReadOnlyList<Kaya_Otel.ViewModels.InstagramPostViewModel>
+
+<section class="instagram-feed py-4">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3 class="mb-0">Instagram'dan Anlar</h3>
+            <a href="https://www.instagram.com/tourkekova/" target="_blank" rel="noopener" class="btn btn-outline-primary btn-sm">
+                Instagram'da Takip Et
+            </a>
+        </div>
+        <div class="row g-3">
+            @foreach (var post in Model)
+            {
+                <div class="col-6 col-md-3">
+                    <a href="@post.Permalink" target="_blank" rel="noopener" class="text-decoration-none">
+                        <div class="ratio ratio-1x1 rounded overflow-hidden shadow-sm">
+                            <img src="@post.ImageUrl" alt="@post.Caption" class="w-100 h-100 object-fit-cover" />
+                        </div>
+                        <p class="mt-2 text-muted small">@post.Caption</p>
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+

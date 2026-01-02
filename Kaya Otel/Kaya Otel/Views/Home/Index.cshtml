@@ -1,0 +1,194 @@
+@{
+    ViewData["Title"] = "Günübirlik Tekne Turu Rezervasyon Sistemi";
+    var tours = ViewBag.Tours as IEnumerable<Kaya_Otel.Models.Tour>;
+    var featured = ViewBag.FeaturedTour as Kaya_Otel.Models.Tour;
+}
+
+<section class="hero bg-dark text-white py-5 mb-5" style="background-image: url('/images/kekova-3.webp'); background-size: cover; background-position: center;">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-7">
+                <p class="text-uppercase text-primary mb-3" Kekova Özel Tekne Turları >
+
+                    <h1 class="display-4 fw-bold">Sunset ve mehtap turlarında yerinizi şimdi ayırtın.</h1>
+<p class="lead">Tek günlük rezervasyon, online kapora ve Instagram’dan canlı içeriklerle modern bir tur deneyimi.</p>
+                <div class="d-flex flex-wrap gap-3 mt-4">
+                    <a asp-controller="Tour" asp-action="Index" class="btn btn-primary btn-lg">Turları Gör</a>
+                    <a asp-controller="Admin" asp-action="AdminLogin" class="btn btn-outline-light btn-lg">Yönetici Girişi</a>
+                    <a href="tel:05395603136" class="fixed-call-button">
+                        📞 0539 560 31 36
+                    </a>
+
+</div>
+            </div>
+            @if (featured != null)
+            {
+                <div class="col-lg-5">
+                    <div class="card shadow-lg">
+                        <img src="@featured.ImageUrl" class="card-img-top" alt="@featured.Name" />
+                        <div class="card-body">
+                            <span class="badge bg-primary">@featured.Category</span>
+                            <h3 class="card-title mt-2">@featured.Name</h3>
+                            <p class="text-muted">@featured.Description</p>
+                            <p class="fw-bold mb-3">@featured.PricePerPerson.ToString("C0") / Tur</p>
+                            <a asp-controller="Booking" asp-action="Reserve" asp-route-tourId="@featured.Id" class="btn btn-primary w-100">Rezervasyon Yap</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="h2 mb-2">Tur Programı</h2>
+            <p class="text-muted">Kekova Tekne Turu rotamız ve duraklarımız</p>
+        </div>
+        <div class="row g-4" id="tourProgram">
+            <div class="col-md-6 col-lg-4 fade-in-item">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="tour-number bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; font-weight: bold; margin-right: 15px;">1</div>
+                            <h5 class="card-title mb-0">AKVARYUM KOYU</h5>
+                        </div>
+                        <p class="card-text text-muted">Akvaryum koyu tekne turumuzun ilk durağıdır. suyunun berraklığından dolayı Akvaryum koyu denmektedir.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 fade-in-item">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="tour-number bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; font-weight: bold; margin-right: 15px;">2</div>
+                            <h5 class="card-title mb-0">TERSANE KOYU</h5>
+                        </div>
+                        <p class="card-text text-muted">Tersane koyu, eski dönemlerde tekne bakım ve onarımında kullanılanmış içerisinde tarihi kalıntıları bulunan bir koy ve batık şehrin bir parçasıdır.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 fade-in-item">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="tour-number bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; font-weight: bold; margin-right: 15px;">3</div>
+                            <h5 class="card-title mb-0">BATIK ŞEHİR</h5>
+                        </div>
+                        <p class="card-text text-muted">Batık şehir, Kekova adasında bulunan dalışa ve yüzmeye kapalı bir likya antik kentidir. Burayı teknemizle görerek geçiyoruz.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 fade-in-item">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="tour-number bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; font-weight: bold; margin-right: 15px;">4</div>
+                            <h5 class="card-title mb-0">KORSAN MAĞARASI</h5>
+                        </div>
+                        <p class="card-text text-muted">Eski dönemlerde içerisine korsanların saklandığı bir deniz mağarasıdır.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 fade-in-item">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="tour-number bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; font-weight: bold; margin-right: 15px;">5</div>
+                            <h5 class="card-title mb-0">GÖKKAYA KOYU</h5>
+                        </div>
+                        <p class="card-text text-muted">Gökkaya koyu Kekova'nın en büyük koyudur. Rüzgarlı ve fırtınalı havalarda tekneciler için çok korunaklı bir limandır. Genellikle öğle yemeği molasını bu koyda vermekteyiz.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 fade-in-item">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="tour-number bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; font-weight: bold; margin-right: 15px;">6</div>
+                            <h5 class="card-title mb-0">ESMERALDA KOYU</h5>
+                        </div>
+                        <p class="card-text text-muted">Esmeralda koyu Kale Köyünden önce 40 dakika yüzme ve çay molası verdiğimiz suyu berrak sakin bir koydur.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 fade-in-item">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="tour-number bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; font-weight: bold; margin-right: 15px;">7</div>
+                            <h5 class="card-title mb-0">KALE KÖYÜ</h5>
+                        </div>
+                        <p class="card-text text-muted">Kara yolu olmayan köy, ulaşım sadece tekne ve yürüyerek sağlanmakta. Burada 1 saat gibi serbest zaman veriyoruz. Dileyen Kaleye çıkıp o muhteşem manzarayı izleyebilir, isteyense köy içerisinde ev yapımı dondurmaları meşhurdur dondurma yiyebilir.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 fade-in-item">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="tour-number bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; font-weight: bold; margin-right: 15px;">8</div>
+                            <h5 class="card-title mb-0">ADALAR ARASI</h5>
+                        </div>
+                        <p class="card-text text-muted">Adalar arası, Kekova Tekne Turunda final koyumuz, burada kısa bir yüzme ve meyve molasından sonra Limana dönüş yapıyoruz.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="h2 mb-2">Tarihi</h2>
+            <p class="text-muted">
+                Kekova
+                Tarihi, doğası ve pırıl pırıl koylarıyla ünlü Kekova, adını Kale köyü ve Üçağız Köyü’nün tam karşılarında doğudan batıya doğru uzanan ve üzerinde bir çok koyu ve tarihi kalıntıları barındıran Kekova adasından almaktadır. Kekova tarihi, bölgede henüz kazı çalışmaları yapılmadığından dolayı tam olarak bilinmemekle birlikte en az M.Ö 5.yy’la yani günümüzden aşağı yukarı 2500 yıl kadar öncesine dayandığı tahmin edilmektedir. Bir ışık ülkesi olarak adlandırılan Likyalılar dönemine ait bir çok kalıntı ve antik kentlerin yanısıra Bizans ve Roma dönemlerine ait kalıntılar görmek mümkündür.
+                Likyalılar dönemine ait başlıca antik kentler; Kekova’nın batı kısmında bulunan Aperlai ve apollonia antik kentleri, Kekova adası üzerinde bulunan ve batık kent olarak bilinen, yılda binlerce turistin tekne turlarıyla ziyaret ettiği, yüzme ve dalışa yasak olan dolichiste antik kenti, Hemen Kekova adasının karşısında Kale Köyün’de bulunan Simena antik kenti, Üçağız köyünde bulunan Theimussa, Gökkaya koyu üzerinde bulunan Istlada birbirlerine çok yakın olan ve Likya birliğine bağlı olarak yaşayan antik kentlerdir.
+            </p>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="card shadow-sm border-0 fade-in-item">
+                    <div class="card-body p-5">
+                        <div class="text-center text-muted">
+                            <p class="mb-0">Tarihi bilgiler buraya eklenecektir.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@{
+    var instagramPosts = ViewBag.InstagramPosts as IReadOnlyList<Kaya_Otel.ViewModels.InstagramPostViewModel> ?? Array.Empty<Kaya_Otel.ViewModels.InstagramPostViewModel>();
+}
+
+@await Html.PartialAsync("~/Views/Shared/_InstagramPosts.cshtml", instagramPosts)
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach((entry, index) => {
+                if (entry.isIntersecting) {
+                    setTimeout(() => {
+                        entry.target.classList.add('visible');
+                    }, index * 100);
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.fade-in-item').forEach(item => {
+            observer.observe(item);
+        });
+    });
+</script>
+

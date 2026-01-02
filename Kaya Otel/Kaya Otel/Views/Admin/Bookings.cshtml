@@ -1,0 +1,50 @@
+@model IEnumerable<Kaya_Otel.Models.Booking>
+
+@{
+    ViewData["Title"] = "Rezervasyonlar";
+}
+
+<section class="py-5">
+    <div class="container">
+        <h1 class="h4 mb-4">Rezervasyonlar</h1>
+        <div class="table-responsive">
+            <table class="table table-striped align-middle">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Tur</th>
+                        <th>Tarih</th>
+                        <th>Müşteri</th>
+                        <th>Kişi</th>
+                        <th>Kapora</th>
+                        <th>Durum</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var booking in Model)
+                    {
+                        <tr>
+                            <td>@booking.Id</td>
+                            <td>@booking.TourName</td>
+                            <td>@booking.TourDate.ToString("dd MMM yyyy")</td>
+                            <td>@booking.CustomerName</td>
+                            <td>@booking.Guests</td>
+                            <td>@booking.DepositAmount.ToString("C0")</td>
+                            <td>
+                                @if (booking.IsDepositPaid)
+                                {
+                                    <span class="badge bg-success">Kapora ödendi</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark">Ödeme bekleniyor</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+

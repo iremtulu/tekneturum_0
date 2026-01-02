@@ -1,0 +1,133 @@
+@model Kaya_Otel.Models.ContactM
+@{
+    ViewData["Title"] = "İletişim";
+}
+
+<section class="contact-hero">
+    <div class="container text-center text-white">
+        <h1 class="fw-bold">Bizimle İletişime Geçin</h1>
+        <p class="lead mb-0">Sorularınız, rezervasyon talepleriniz ve önerileriniz için bize ulaşabilirsiniz.</p>
+    </div>
+</section>
+
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row g-4 text-center">
+
+            <div class="col-md-4">
+                <div class="contact-card h-100">
+                    <div class="icon">📍</div>
+                    <h5>Adres</h5>
+                    <p>@Model.Adres</p>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="contact-card h-100">
+                    <div class="icon">📞</div>
+                    <h5>Telefon</h5>
+                    <p>
+                        <a href="tel:@Model.PhoneNumber" class="text-decoration-none">
+                            @Model.PhoneNumber
+                        </a>
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="contact-card h-100">
+                    <div class="icon">✉️</div>
+                    <h5>E-posta</h5>
+                    <p>
+                        <a href="mailto:@Model.Email" class="text-decoration-none">
+                            @Model.Email
+                        </a>
+                    </p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-4">
+            <h2 class="fw-bold">Konumumuz</h2>
+            <p class="text-muted">Kekova bölgesindeki konumumuzu haritadan inceleyebilirsiniz.</p>
+        </div>
+
+        <div class="map-wrapper shadow-sm">
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d102104.39163661435!2d30.654501699999997!3d36.8960358!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x14c3904b38265a55%3A0x2481a83a890b0399!2zS29ueWFhbHTEsSBQbGFqbGFyxLE!5e0!3m2!1str!2str!4v1758454818260!5m2!1str!2str"
+                    width="100%" height="450" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+        </div>
+    </div>
+</section>
+
+<footer class="contact-footer">
+    <div class="container text-center">
+        <p class="mb-3 fw-semibold">Bizi Sosyal Medyada Takip Edin</p>
+        <a href="https://www.instagram.com/tourkekova/" target="_blank" class="social-icon">
+            <img src="~/NewFolder/inta.png" alt="Instagram">
+        </a>
+        <a href="https://www.x.com/" target="_blank" class="social-icon">
+            <img src="~/NewFolder/x.png" alt="X">
+        </a>
+    </div>
+</footer>
+
+<style>
+    /* HERO */
+    .contact-hero {
+        background: linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)), url('/images/kekova-3.webp') center/cover no-repeat;
+        padding: 80px 0;
+    }
+
+    /* CONTACT CARDS */
+    .contact-card {
+        background: #fff;
+        padding: 30px 20px;
+        border-radius: 12px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+        transition: transform .3s ease, box-shadow .3s ease;
+    }
+
+        .contact-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+        }
+
+        .contact-card .icon {
+            font-size: 36px;
+            margin-bottom: 15px;
+        }
+
+        .contact-card h5 {
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+    /* MAP */
+    .map-wrapper {
+        border-radius: 15px;
+        overflow: hidden;
+    }
+
+    /* FOOTER */
+    .contact-footer {
+        background-color: #0d6efd;
+        color: #fff;
+        padding: 30px 0;
+    }
+
+    .social-icon img {
+        width: 40px;
+        height: 40px;
+        margin: 0 10px;
+        transition: transform .3s ease;
+    }
+
+        .social-icon img:hover {
+            transform: scale(1.15);
+        }
+</style>

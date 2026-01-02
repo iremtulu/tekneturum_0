@@ -1,0 +1,15 @@
+@model Kaya_Otel.Models.Reservation
+
+<h2>Ödeme Sayfası</h2>
+
+<p>Oda ID: @Model.RoomId</p>
+<p>Giriş: @Model.CheckIn.ToShortDateString()</p>
+<p>Çıkış: @Model.CheckOut.ToShortDateString()</p>
+<p>Yetişkin: @Model.Adults</p>
+<p>Çocuk: @Model.Children</p>
+<p><strong>Toplam Ücret: @Model.TotalPrice ₺</strong></p>
+
+<form method="post" asp-action="Success" asp-controller="Pay">
+    <input type="hidden" name="id" value="@Model.Id" />
+    <button type="submit" class="btn btn-primary">Ödemeyi Tamamla</button>
+</form>

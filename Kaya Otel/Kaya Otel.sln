@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34701.34
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kaya Otel", "Kaya Otel\Kaya Otel.csproj", "{A43199BB-A228-464B-A2E8-CA929DEEF96F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A43199BB-A228-464B-A2E8-CA929DEEF96F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A43199BB-A228-464B-A2E8-CA929DEEF96F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A43199BB-A228-464B-A2E8-CA929DEEF96F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A43199BB-A228-464B-A2E8-CA929DEEF96F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3C779DF2-FEC7-4992-A53A-4C1C37558828}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,55 @@
+@model IEnumerable<Kaya_Otel.Models.Tour>
+
+@{
+    ViewData["Title"] = "Tur Yönetimi";
+}
+
+<section class="py-5">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h4 mb-0">Turlar</h1>
+            <a asp-action="CreateTour" class="btn btn-primary">Yeni Tur Ekle</a>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Ad</th>
+                        <th>Kategori</th>
+                        <th>Fiyat</th>
+                        <th>Kapasite</th>
+                        <th>Durum</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var tour in Model)
+                    {
+                        <tr>
+                            <td>@tour.Name</td>
+                            <td>@tour.Category</td>
+                            <td>@tour.PricePerPerson.ToString("C0")</td>
+                            <td>@tour.Capacity</td>
+                            <td>
+                                @if (tour.IsActive)
+                                {
+                                    <span class="badge bg-success">Aktif</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Pasif</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <a asp-action="EditTour" asp-route-id="@tour.Id" class="btn btn-sm btn-outline-primary">Düzenle</a>
+                                <a asp-action="RemoveTour" asp-route-id="@tour.Id" class="btn btn-sm btn-outline-danger">Sil</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+

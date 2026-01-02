@@ -1,0 +1,41 @@
+@{
+    ViewData["Title"] = "Yönetim Paneli";
+}
+
+<section class="py-5">
+    <div class="container">
+        <h1 class="h3 mb-4">Yönetim Paneli</h1>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card shadow-sm">
+                    <div class="card-body text-center">
+                        <h2 class="display-5">@ViewBag.TourCount</h2>
+                        <p class="text-muted mb-0">Aktif Tur</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm">
+                    <div class="card-body text-center">
+                        <h2 class="display-5">@ViewBag.BookingCount</h2>
+                        <p class="text-muted mb-0">Rezervasyon</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm">
+                    <div class="card-body text-center">
+                        <h2 class="display-5">@ViewBag.PaymentCount</h2>
+                        <p class="text-muted mb-0">Kapora Ödemesi</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="mt-4 d-flex gap-2">
+            <a asp-action="Tours" class="btn btn-primary">Turları Yönet</a>
+            <a asp-action="Bookings" class="btn btn-outline-secondary">Rezervasyonlar</a>
+            <a asp-action="Payments" class="btn btn-outline-secondary">Ödemeler</a>
+        </div>
+    </div>
+</section>
+

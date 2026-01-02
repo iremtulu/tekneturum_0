@@ -1,0 +1,22 @@
+﻿@{
+    ViewData["Title"] = "Admin Girişi";
+}
+
+<h2>Admin Girişi</h2>
+
+<form asp-action="Login" method="post">
+    <div>
+        <label>Kullanıcı Adı</label>
+        <input type="text" name="UserName" />
+    </div>
+    <div>
+        <label>Şifre</label>
+        <input type="Password" name="Password" />
+    </div>
+    <button type="submit">Giriş</button>
+</form>
+
+@if(ViewBag.Hata != null)
+{
+    <p style="color:red">@ViewBag.Hata</p>
+}

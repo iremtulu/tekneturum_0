@@ -1,0 +1,9 @@
+@model Kaya_Otel.Models.Reservation
+
+<h2>Rezervasyon Detayı</h2>
+
+<p>Giriş: @Model.CheckIn.ToShortDateString()</p>
+<p>Çıkış: @Model.CheckOut.ToShortDateString()</p>
+<p>Yetişkin: @Model.Adults</p>
+<p>Çocuk: @Model.Children</p>
+<p><strong>Toplam Ücret: @Model.TotalPrice</strong></p>

@@ -1,0 +1,75 @@
+@{
+    ViewData["Title"] = "Ödeme Başarılı";
+}
+
+<div class="container success-container">
+    <div class="success-card">
+        <h1 class="success-title">✅ Ödeme Başarılı!</h1>
+        <p class="success-message">
+            Ödemeniz gerçekleşti. Rezervasyonunuz başarılı bir şekilde oluşturulmuştur.
+        </p>
+        <a asp-action="Search" asp-controller="Reservation" class="success-btn">
+            🏨 Yeni Rezervasyon Yap
+        </a>
+    </div>
+    <footer class="success-footer">
+        © 2025 - Kaya Otel
+    </footer>
+</div>
+
+<style>
+    .success-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 80vh;
+        font-family: Arial, sans-serif;
+        background-color: #f0f2f5;
+        padding: 20px;
+    }
+
+    .success-card {
+        background-color: #ffffff;
+        padding: 40px;
+        border-radius: 20px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        text-align: center;
+        max-width: 600px;
+        width: 100%;
+    }
+
+    .success-title {
+        color: #28a745;
+        font-size: 2.5rem;
+        margin-bottom: 20px;
+    }
+
+    .success-message {
+        font-size: 1.2rem;
+        margin-bottom: 30px;
+        color: #333333;
+    }
+
+    .success-btn {
+        display: inline-block;
+        background-color: #007bff;
+        color: #fff;
+        padding: 12px 30px;
+        border-radius: 50px;
+        font-size: 1.1rem;
+        text-decoration: none;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+
+        .success-btn:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+
+    .success-footer {
+        margin-top: 40px;
+        color: #6c757d;
+    }
+</style>

@@ -1,0 +1,22 @@
+@model Kaya_Otel.Models.Booking
+
+@{
+    ViewData["Title"] = "Rezervasyon Onayı";
+}
+
+<section class="py-5 text-center">
+    <div class="container">
+        <div class="card shadow-sm">
+            <div class="card-body py-5">
+                <div class="display-4 text-success mb-3">✓</div>
+                <h1 class="h3 mb-3">@ViewBag.Message</h1>
+                <p class="text-muted mb-4">
+                    @Model.TourName için @Model.TourDate.ToString("dd MMM yyyy") tarihli rezervasyonunuz oluşturuldu.
+                    Kapora ödemesi alındı, kalan tutar tur günü ödenecektir.
+                </p>
+                <a asp-controller="Home" asp-action="Index" class="btn btn-primary">Ana Sayfaya Dön</a>
+            </div>
+        </div>
+    </div>
+</section>
+

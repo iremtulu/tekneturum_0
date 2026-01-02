@@ -1,0 +1,177 @@
+/* ---------------- Navbar ---------------- */
+#navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    padding: 10px 20px;
+    background-color: white;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+}
+
+    #navbar .nav-link,
+    #navbar .navbar-brand {
+        color: black !important;
+        transition: color 0.3s ease;
+    }
+
+    /* Scroll sonras� arka plan ve renk de�i�imi */
+    #navbar.scrolled {
+        background-color: white;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+
+        #navbar.scrolled .nav-link,
+        #navbar.scrolled .navbar-brand {
+            color: black !important;
+        }
+
+/* ikon rengi */
+.navbar-icon {
+    background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba%28255,255,255,1%29' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+    border: none;
+    background-color: transparent; /* ikon arkas� saydam */
+
+}
+
+
+/* Men� d�zeni */
+.navbar-nav {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 20px;
+}
+
+.navbar .btn-rooms {
+    background-color: transparent;
+    border: 2px solid white;
+    color: white;
+    border-radius: 25px;
+    padding: 6px 15px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+    .navbar .btn-rooms:hover {
+        background-color: white;
+        color: #2a9ec5;
+    }
+
+/* Sayfan�n �st�nden biraz bo�luk */
+body {
+    padding-top: 60px;
+}
+
+/*anasayfa resmi*/
+.hero {
+    position: relative;
+    height: 100vh; /* ekran�n tamam�n� kaplas�n diye*/
+    width: 100%;
+    background-image: url('/NewFolder/otel.jpg'); 
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.hero-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    text-align: center;
+    text-shadow: 2px 2px 10px rgba(0,0,0,0.7);
+}
+
+    .hero-text h1 {
+        font-size: 3rem;
+        font-weight: bold;
+    }
+
+    .hero-text p {
+        font-size: 1.5rem;
+        margin-top: 10px;
+    }
+.about-section{
+background-color: #f8f9fa;
+padding-top: 0; /* biraz yukar�dan ba�latmak i�in */
+padding-bottom: 20px;
+}
+.about-section h2 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+    color: #333;
+    text-align:center;
+}
+
+.about-section p {
+    font-size: 1.1rem;
+    color: #555;
+    line-height: 1.6;
+    text-align:center;
+}
+
+
+/*Fade-in kartlar(ba�lang��ta g�r�nmeyen scroll edince ortya ��kan) */
+.fade-in {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+}
+
+    .fade-in.visible {
+        opacity: 1;
+        transform: translateY(0);
+      
+    }
+
+/* Tur Programı animasyonları */
+.fade-in-item {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.fade-in-item.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.tour-number {
+    transition: transform 0.3s ease;
+}
+
+.fade-in-item:hover .tour-number {
+    transform: scale(1.1);
+}
+
+.fade-in-item .card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.fade-in-item:hover .card {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15) !important;
+}
+
+.fixed-call-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #0d6efd; /* Bootstrap mavi */
+    color: #fff;
+    padding: 14px 20px;
+    border-radius: 50px;
+    font-size: 16px;
+    font-weight: 600;
+    text-decoration: none;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+    z-index: 9999;
+}
+
+    .fixed-call-button:hover {
+        background-color: #0b5ed7;
+        color: #fff;
+    }

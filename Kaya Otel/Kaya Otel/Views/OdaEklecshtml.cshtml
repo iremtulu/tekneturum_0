@@ -1,0 +1,21 @@
+﻿@model Kaya_Otel.Models.Room
+
+
+<h2>Yeni Oda Ekle</h2>
+
+<form asp-action="OdaEkle" method="post">
+    <div>
+        <label>Oda Adı</label>
+        <input asp-for="Name" />
+    </div>
+    <div>
+        <label>Kapasite</label>
+        <input asp-for="Capacity" type="number" />
+    </div>
+    <div>
+        <label>Fiyat</label>
+        <input asp-for="Price" type="number" step="0.01" />
+    </div>
+
+    <button type="submit">Kaydet</button>
+</form>

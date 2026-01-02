@@ -1,0 +1,135 @@
+@model Kaya_Otel.Models.BookingRequestViewModel
+@{
+    var tour = ViewBag.Tour as Kaya_Otel.Models.Tour;
+    ViewData["Title"] = "Rezervasyon - " + tour?.Name;
+}
+
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-7">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h2 class="h4 mb-4">Tur Rezervasyonu</h2>
+                        <form asp-action="Reserve" method="post" class="row g-3">
+                            <input type="hidden" asp-for="TourId" />
+                            <div class="col-md-6">
+                                <label asp-for="TourDate" class="form-label">Tur Tarihi</label>
+                                <input asp-for="TourDate" id="tourDateInput" class="form-control" type="date" min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                                <span asp-validation-for="TourDate" class="text-danger"></span>
+                                <small id="dateStatus" class="form-text text-muted"></small>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Guests" class="form-label">Kişi Sayısı</label>
+                                <input asp-for="Guests" class="form-control" type="number" min="1" max="50" />
+                                <span asp-validation-for="Guests" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="CustomerName" class="form-label">Ad Soyad</label>
+                                <input asp-for="CustomerName" class="form-control" />
+                                <span asp-validation-for="CustomerName" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Phone" class="form-label">Telefon</label>
+                                <input asp-for="Phone" class="form-control" type="tel" maxlength="11" pattern="[0-9]{11}" placeholder="11 haneli telefon numarası" />
+                                <span asp-validation-for="Phone" class="text-danger"></span>
+                            </div>
+                            <div class="col-12">
+                                <label asp-for="Email" class="form-label">E-posta</label>
+                                <input asp-for="Email" class="form-control" />
+                                <span asp-validation-for="Email" class="text-danger"></span>
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary w-100">Kapora Ödemesine Geç</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h5">@tour?.Name</h3>
+                        <p class="text-muted">@tour?.Description</p>
+                        <ul class="list-unstyled">
+                            <li><strong>Kategori:</strong> @tour?.Category</li>
+                            <li><strong>Süre:</strong> @tour?.Duration.TotalHours.ToString("0") saat</li>
+                            <li><strong>Kapasite:</strong> @tour?.Capacity kişi</li>
+                            <li><strong>Tur Fiyatı:</strong> @tour?.PricePerPerson.ToString("C0")</li>
+                        </ul>
+                        <div class="alert alert-info">
+                            Kapora tutarı toplam ücretin %20'si olarak hesaplanacaktır.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<partial name="_ValidationScriptsPartial" />
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const dateInput = document.getElementById('tourDateInput');
+        const dateStatus = document.getElementById('dateStatus');
+        let paidDates = [];
+        let unpaidDates = [];
+
+        // Tarih durumlarını yükle
+        fetch('@Url.Action("GetBookingDates", "Booking")')
+            .then(response => response.json())
+            .then(data => {
+                paidDates = data.paidDates || [];
+                unpaidDates = data.unpaidDates || [];
+                updateDateInputStyle();
+            })
+            .catch(error => console.error('Tarih durumları yüklenemedi:', error));
+
+        function updateDateInputStyle() {
+            const selectedDate = dateInput.value;
+            if (!selectedDate) return;
+
+            dateInput.classList.remove('date-paid', 'date-unpaid');
+            dateStatus.textContent = '';
+
+            if (paidDates.includes(selectedDate)) {
+                dateInput.classList.add('date-paid');
+                dateStatus.textContent = '⚠️ Bu tarih için ödeme yapılmış rezervasyon var';
+                dateStatus.className = 'form-text text-danger';
+            } else if (unpaidDates.includes(selectedDate)) {
+                dateInput.classList.add('date-unpaid');
+                dateStatus.textContent = '✓ Bu tarih için ödeme yapılmamış rezervasyon var';
+                dateStatus.className = 'form-text text-success';
+            } else {
+                dateStatus.textContent = '';
+            }
+        }
+
+        dateInput.addEventListener('change', updateDateInputStyle);
+        dateInput.addEventListener('input', updateDateInputStyle);
+    });
+</script>
+
+<style>
+    input.date-paid {
+        border: 2px solid #dc3545 !important;
+        background-color: #fff5f5;
+    }
+
+    input.date-paid:focus {
+        border-color: #dc3545 !important;
+        box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+    }
+
+    input.date-unpaid {
+        border: 2px solid #28a745 !important;
+        background-color: #f0fff4;
+    }
+
+    input.date-unpaid:focus {
+        border-color: #28a745 !important;
+        box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+    }
+</style>
+

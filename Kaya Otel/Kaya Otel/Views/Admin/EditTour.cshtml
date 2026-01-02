@@ -1,0 +1,62 @@
+@model Kaya_Otel.Models.Tour
+
+@{
+    ViewData["Title"] = "Tur Güncelle";
+}
+
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h1 class="h4 mb-4">@Model.Name Turunu Düzenle</h1>
+                        <form asp-action="EditTour" class="row g-3">
+                            <input type="hidden" asp-for="Id" />
+                            <div class="col-md-6">
+                                <label asp-for="Name" class="form-label"></label>
+                                <input asp-for="Name" class="form-control" />
+                                <span asp-validation-for="Name" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Category" class="form-label"></label>
+                                <input asp-for="Category" class="form-control" />
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="PricePerPerson" class="form-label">Tur Fiyatı</label>
+                                <input asp-for="PricePerPerson" class="form-control" />
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Capacity" class="form-label"></label>
+                                <input asp-for="Capacity" class="form-control" />
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Duration" class="form-label"></label>
+                                <input asp-for="Duration" class="form-control" />
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="ImageUrl" class="form-label"></label>
+                                <input asp-for="ImageUrl" class="form-control" />
+                            </div>
+                            <div class="col-12">
+                                <label asp-for="Description" class="form-label"></label>
+                                <textarea asp-for="Description" rows="4" class="form-control"></textarea>
+                            </div>
+                            <div class="col-12 form-check">
+                                <input asp-for="IsActive" class="form-check-input" />
+                                <label asp-for="IsActive" class="form-check-label">Aktif</label>
+                            </div>
+                            <div class="col-12 d-flex justify-content-between">
+                                <a asp-action="Tours" class="btn btn-outline-secondary">Geri</a>
+                                <button type="submit" class="btn btn-primary">Güncelle</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<partial name="_ValidationScriptsPartial" />
+

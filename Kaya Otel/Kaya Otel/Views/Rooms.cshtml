@@ -1,0 +1,24 @@
+
+
+@model List<Kaya_Otel.Models.Room>
+
+<div class="container mt-5">
+    <h2>Odalarımız</h2>
+    <div class="row">
+        @foreach (var room in Model)
+        {
+            <div class="col-md-4">
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">@room.Name</h5>
+                        <p class="card-text">
+                            Kapasite: @room.Capacity Kişi <br />
+                            Fiyat: @room.Price ₺
+                        </p>
+                        <a href="/Home/Rezervasyon/@room.Id" class="btn btn-success">Rezervasyon Yap</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

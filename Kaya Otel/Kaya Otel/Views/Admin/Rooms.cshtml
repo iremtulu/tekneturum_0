@@ -1,0 +1,134 @@
+@model List<Kaya_Otel.Models.Room>
+<form asp-action="OdaEkle" asp-controller="Admin" method="post" class="room-form">
+<h2>Oda Düzenleme</h2>
+
+    <fieldset>
+        
+    <div class="form-group">
+        <label>Oda Adı</label>
+        <input type="text" name="Name" required />
+    </div>
+    <div class="form-group">
+        <label>Fiyat</label><br />
+        <input type="number" name="Price" required />
+    </div>
+    <div class="form-group">
+        <label>Max Yetişkin</label>
+        <input type="number" name="MaxAdults" required />
+    </div>
+    <div class="form-group">
+        <label>Max Çocuk</label>
+        <input type="number" name="MaxChildren" required />
+    </div>
+    <div class="form-group checkbox-group">
+        <label>Müsait Mi?</label>
+        <input type="checkbox" name="Avaible" value="true" />
+    </div>
+    <button  asp-controller="Admin" asp-action="OdaEkle"  type="submit">Oda Ekle</button>
+    </fieldset>
+</form>
+<table border="1" cellpadding="10">
+    <thead>
+        <tr>
+            <th>Id</th>
+          <th>Ad</th>
+            <th>Fiyat</th>
+            <th>Yetişkin</th>
+          <th>Çocuk</th>
+            <th>Kapasite</th>
+            <th>Durum</th>
+            <th>İşlemler</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var room in Model)
+        {
+            <tr>
+                <td>@room.Id</td>
+                <td>@room.Name</td>
+                <td>@room.Price ₺</td>
+                <td>@room.MaxAdults</td>
+                <td>@room.MaxChildren</td>
+                <td>@room.Capacity</td>
+                <td>@(room.Available ? "Müsait" : "Dolu")</td>
+                <td>
+                    <a class="btn btn-danger btn-sm" asp-controller="Admin"  asp-action="Remove" asp-route-id="@room.Id">
+         Sil</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<style>
+    table, th, td {
+        border: 1px solid white;
+        border-collapse: collapse;
+    }
+
+    th, td {
+        background-color: #96D4D4;
+    }
+    .table{
+        align-items:right;
+    }
+    .room-form {
+        max-width: 300px;
+        margin: 20px auto;
+        padding: 20px;
+        background-color: #e0f7fa;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        font-family: Arial, sans-serif;
+        text-align:left;
+    }
+
+        .room-form h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #007bff;
+        }
+
+    .form-group {
+        margin-bottom: 15px;
+       text-align:center;:
+        flex-direction: column;
+    }
+
+        .form-group label {
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+    .form-control {
+        padding: 8px 10px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+    }
+
+    .checkbox-group {
+        flex-direction: row;
+        align-items: center;
+    }
+
+        .checkbox-group label {
+            margin-left: 5px;
+            font-weight: normal;
+        }
+
+    .btn-primary {
+        width: 100%;
+        padding: 10px;
+        background-color: #007bff;
+        border: none;
+        color: white;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+   
+</style>
+
+

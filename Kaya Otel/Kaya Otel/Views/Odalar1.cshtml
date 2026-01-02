@@ -1,0 +1,23 @@
+﻿@model IEnumerable<Kaya_Otel.Models.Room>
+
+<h2>Odalar</h2>
+
+<a asp-action="OdaEkle">Yeni Oda Ekle</a>
+
+<table border="1">
+    <tr>
+        <th>Oda Adı</th>
+        <th>Kapasite</th>
+        <th>Fiyat</th>
+       
+    </tr>
+    @foreach (var r in Model)
+    {
+        <tr>
+            <td>@r.Name</td>
+            <td>@r.Capacity</td>
+            <td>@r.Price</td>
+            
+        </tr>
+    }
+</table>

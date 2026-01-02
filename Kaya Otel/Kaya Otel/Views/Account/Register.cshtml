@@ -1,0 +1,10 @@
+@model Kaya_Otel.Models.user
+
+<h2>Kayıt Ol</h2>
+<form asp-action="Login" asp-controller="Account" method="post">
+    <label>Ad Soyad</label>
+    <input type="text" name="Name" required /><br />
+    <label>Şifre</label>
+    <input type="password" name="Password" required /><br />
+    <button type="submit">Kayıt Ol</button>
+</form>

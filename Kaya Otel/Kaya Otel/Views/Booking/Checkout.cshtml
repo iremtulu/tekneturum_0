@@ -1,0 +1,57 @@
+@model Kaya_Otel.Models.Booking
+
+@{
+    ViewData["Title"] = "Kapora Ödeme";
+}
+
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h2 class="h4 mb-4">Kapora Ödemesi</h2>
+                        <div class="mb-3">
+                            <p class="mb-1 text-muted">Tur</p>
+                            <h5>@Model.TourName</h5>
+                        </div>
+                        <div class="mb-3 d-flex justify-content-between">
+                            <span>Tur Tarihi</span>
+                            <strong>@Model.TourDate.ToString("dd MMM yyyy")</strong>
+                        </div>
+                        <div class="mb-3 d-flex justify-content-between">
+                            <span>Kişi Sayısı</span>
+                            <strong>@Model.Guests</strong>
+                        </div>
+                        @{
+                            var tourPrice = ViewBag.TourPrice as decimal? ?? Model.TotalAmount / Model.Guests;
+                        }
+                        <div class="mb-3 d-flex justify-content-between">
+                            <span>Tur Fiyatı</span>
+                            <strong>@tourPrice.ToString("C0")</strong>
+                        </div>
+                        <div class="alert alert-primary">
+                            Kapora tutarı tur fiyatının %20'sidir.
+                            <div class="d-flex justify-content-between mt-2">
+                                <span>Ödenecek Kapora</span>
+                                <strong>@Model.DepositAmount.ToString("C0")</strong>
+                            </div>
+                        </div>
+                        <form asp-action="CompletePayment" method="post" class="d-grid gap-2">
+                            <input type="hidden" name="bookingId" value="@Model.Id" />
+                            <select name="provider" class="form-select">
+                                <option value="iyzico">iyzico</option>
+                                <option value="stripe">Stripe</option>
+                            </select>
+                            <button class="btn btn-success btn-lg" type="submit">Ödemeyi Tamamla</button>
+                        </form>
+                        <p class="text-muted small mt-3">
+                            * Test ortamında gerçek ödeme alınmamaktadır. Ödeme sağlayıcı entegrasyonu için kendi API anahtarlarınızı girmeniz yeterlidir.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
