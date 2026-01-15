@@ -18,7 +18,7 @@ namespace Kaya_Otel.Services
 
     public interface IIyzicoPaymentService
     {
-        Task<IyzicoPaymentResult> ChargeDepositAsync(Booking booking);
+        Task<IyzicoPaymentResult> ChargeDepositAsync(Booking booking, string cardHolderName, string cardNumber, string expireMonth, string expireYear, string cvc);
     }
 
     public class IyzicoPaymentService : IIyzicoPaymentService
@@ -37,7 +37,7 @@ namespace Kaya_Otel.Services
             _logger = logger;
         }
 
-        public Task<IyzicoPaymentResult> ChargeDepositAsync(Booking booking)
+        public Task<IyzicoPaymentResult> ChargeDepositAsync(Booking booking, string cardHolderName, string cardNumber, string expireMonth, string expireYear, string cvc)
         {
             return Task.Run(() =>
             {
@@ -61,14 +61,14 @@ namespace Kaya_Otel.Services
                     PaymentGroup = PaymentGroup.PRODUCT.ToString()
                 };
 
-                // SANDBOX TEST KARTI (kullanıcıdan kart bilgisi alınmadığı için sabit)
+                // Kullanıcıdan alınan kart bilgileri
                 request.PaymentCard = new PaymentCard
                 {
-                    CardHolderName = booking.CustomerName ?? "Test User",
-                    CardNumber = "5528790000000008",
-                    ExpireMonth = "12",
-                    ExpireYear = "2030",
-                    Cvc = "123",
+                    CardHolderName = cardHolderName ?? booking.CustomerName ?? "Test User",
+                    CardNumber = cardNumber?.Replace(" ", "").Replace("-", "") ?? "5528790000000008",
+                    ExpireMonth = expireMonth ?? "12",
+                    ExpireYear = expireYear ?? "2030",
+                    Cvc = cvc ?? "123",
                     RegisterCard = 0
                 };
 
@@ -118,15 +118,122 @@ namespace Kaya_Otel.Services
 
                 var iyziPayment = Iyzipay.Model.Payment.Create(request, options);
 
-                _logger.LogInformation("Iyzipay payment response: {@Payment}", iyziPayment);
+                // Tüm response'u detaylı loglama
+                var fullResponse = iyziPayment.ToString();
+                _logger.LogInformation("═══════════════════════════════════════════════════════════");
+                _logger.LogInformation("Iyzipay FULL payment response for booking {BookingId}: {FullResponse}", booking.Id, fullResponse);
+                _logger.LogInformation("═══════════════════════════════════════════════════════════");
+                _logger.LogInformation("Iyzipay payment response details:");
+                _logger.LogInformation("  Status: {Status}", iyziPayment.Status);
+                _logger.LogInformation("  PaymentStatus: {PaymentStatus} (IsNull: {IsNull})", iyziPayment.PaymentStatus, iyziPayment.PaymentStatus == null);
+                _logger.LogInformation("  PaymentId: {PaymentId} (IsNull: {IsNull})", iyziPayment.PaymentId, string.IsNullOrEmpty(iyziPayment.PaymentId));
+                _logger.LogInformation("  FraudStatus: {FraudStatus}", iyziPayment.FraudStatus);
+                _logger.LogInformation("  ErrorMessage: {ErrorMessage}", iyziPayment.ErrorMessage);
+                _logger.LogInformation("  ErrorCode: {ErrorCode}", iyziPayment.ErrorCode);
+
+                // PaymentId kontrolü - Sandbox'ta görünmesi için önemli
+                if (!string.IsNullOrEmpty(iyziPayment.PaymentId))
+                {
+                    _logger.LogInformation("✅ PaymentId oluşturuldu: {PaymentId} - Bu ödeme Iyzico sisteminde kayıtlı!", iyziPayment.PaymentId);
+                }
+                else
+                {
+                    _logger.LogWarning("⚠️ PaymentId oluşturulmadı! Ödeme sandbox panosunda görünmeyebilir.");
+                }
+
+                // API çağrısı başarılı mı kontrol et
+                var isApiSuccess = string.Equals(iyziPayment.Status, "success", StringComparison.OrdinalIgnoreCase);
+
+                // PaymentStatus kontrolü - SUCCESS olmalı, ama null ise PaymentId'ye bak
+                var paymentStatus = iyziPayment.PaymentStatus?.ToString() ?? string.Empty;
+                var hasPaymentId = !string.IsNullOrEmpty(iyziPayment.PaymentId);
+
+                // PaymentStatus varsa SUCCESS olmalı, yoksa PaymentId varsa başarılı sayılabilir
+                // (Iyzico sandbox'ta bazı durumlarda PaymentStatus null olabilir ama PaymentId döner)
+                var isPaymentSuccess = false;
+                if (!string.IsNullOrEmpty(paymentStatus))
+                {
+                    // PaymentStatus varsa SUCCESS olmalı
+                    isPaymentSuccess = string.Equals(paymentStatus, "SUCCESS", StringComparison.OrdinalIgnoreCase);
+                }
+                else if (hasPaymentId && isApiSuccess)
+                {
+                    // PaymentStatus null ama PaymentId varsa ve Status success ise, ödeme başarılı
+                    isPaymentSuccess = true;
+                    _logger.LogInformation("PaymentStatus is null but PaymentId exists ({PaymentId}) and Status is success. Treating as successful payment.", iyziPayment.PaymentId);
+                }
+                else if (isApiSuccess && !hasPaymentId)
+                {
+                    // Status success ama PaymentId yok - bu bir sorun olabilir
+                    _logger.LogWarning("Status is success but PaymentId is null for booking {BookingId}. This might indicate an issue.", booking.Id);
+                    isPaymentSuccess = false;
+                }
+
+                // FraudStatus kontrolü: 1=APPROVED, 2=APPROVED_RISKY, 3=WAITING, 4=REFUSED
+                // Sadece 1 ve 2 kabul edilebilir (null ise de kabul edilir - bazı ödeme yöntemlerinde olmayabilir)
+                var fraudStatusValue = iyziPayment.FraudStatus?.ToString() ?? string.Empty;
+                var isFraudCheckPassed = string.IsNullOrEmpty(fraudStatusValue) ||
+                                         fraudStatusValue == "1" ||
+                                         fraudStatusValue == "2";
+
+                // Ödeme başarılı sayılması için: API başarılı VE (PaymentStatus SUCCESS veya PaymentId var) VE Fraud kontrolü geçmeli
+                var isSuccess = isApiSuccess && isPaymentSuccess && isFraudCheckPassed;
+
+                _logger.LogInformation("Payment validation result for booking {BookingId} - isApiSuccess: {ApiSuccess}, isPaymentSuccess: {PaymentSuccess} (PaymentStatus: {PaymentStatus}, HasPaymentId: {HasPaymentId}), isFraudCheckPassed: {FraudPassed}, Final Success: {Success}",
+                    booking.Id, isApiSuccess, isPaymentSuccess, paymentStatus, hasPaymentId, isFraudCheckPassed, isSuccess);
+
+                // Hata mesajını oluştur
+                var errorMessage = string.Empty;
+                if (!isSuccess)
+                {
+                    if (!string.IsNullOrEmpty(iyziPayment.ErrorMessage))
+                    {
+                        // Iyzico'dan gelen hata mesajını kullan
+                        errorMessage = iyziPayment.ErrorMessage;
+                    }
+                    else if (!string.IsNullOrEmpty(iyziPayment.ErrorCode))
+                    {
+                        // ErrorCode varsa onu kullan
+                        errorMessage = $"Ödeme başarısız oldu. Hata kodu: {iyziPayment.ErrorCode}";
+                    }
+                    else if (!isApiSuccess)
+                    {
+                        // API çağrısı başarısız
+                        errorMessage = $"API çağrısı başarısız oldu. Durum: {iyziPayment.Status}";
+                    }
+                    else if (!isPaymentSuccess)
+                    {
+                        // PaymentStatus kontrolü başarısız
+                        if (!string.IsNullOrEmpty(paymentStatus))
+                        {
+                            errorMessage = $"Ödeme başarısız oldu. Durum: {paymentStatus}";
+                        }
+                        else if (!hasPaymentId)
+                        {
+                            errorMessage = "Ödeme başarısız oldu. Ödeme ID'si alınamadı.";
+                        }
+                        else
+                        {
+                            errorMessage = "Ödeme başarısız oldu.";
+                        }
+                    }
+                    else if (!isFraudCheckPassed)
+                    {
+                        errorMessage = $"Dolandırıcılık kontrolü başarısız. Durum: {iyziPayment.FraudStatus}";
+                    }
+                    else
+                    {
+                        errorMessage = "Ödeme işlemi başarısız oldu. Lütfen kart bilgilerinizi kontrol edip tekrar deneyiniz.";
+                    }
+                }
 
                 var result = new IyzicoPaymentResult
                 {
-                    Success = string.Equals(iyziPayment.Status, "success", StringComparison.OrdinalIgnoreCase),
-                    Status = iyziPayment.Status,
+                    Success = isSuccess,
+                    Status = iyziPayment.Status ?? string.Empty,
                     TransactionId = iyziPayment.PaymentId ?? string.Empty,
                     RawResult = iyziPayment.ToString() ?? string.Empty,
-                    ErrorMessage = iyziPayment.ErrorMessage ?? string.Empty
+                    ErrorMessage = errorMessage
                 };
 
                 return result;

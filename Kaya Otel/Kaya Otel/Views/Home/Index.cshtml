@@ -11,12 +11,12 @@
                 <p class="text-uppercase text-primary mb-3" Kekova Özel Tekne Turları >
 
                     <h1 class="display-4 fw-bold">Sunset ve mehtap turlarında yerinizi şimdi ayırtın.</h1>
-<p class="lead">Tek günlük rezervasyon, online kapora ve Instagram’dan canlı içeriklerle modern bir tur deneyimi.</p>
+<p class="lead">Kekova'nın tarihi sularında unutulmaz bir tur deneyimi.</p>
                 <div class="d-flex flex-wrap gap-3 mt-4">
                     <a asp-controller="Tour" asp-action="Index" class="btn btn-primary btn-lg">Turları Gör</a>
-                    <a asp-controller="Admin" asp-action="AdminLogin" class="btn btn-outline-light btn-lg">Yönetici Girişi</a>
-                    <a href="tel:05395603136" class="fixed-call-button">
-                        📞 0539 560 31 36
+                    <a href="tel:05395603136" class="animated-phone-button">
+                        <span class="phone-icon">📞</span>
+                        <span class="phone-number">0539 560 31 36</span>
                     </a>
 
 </div>
@@ -31,7 +31,34 @@
                             <h3 class="card-title mt-2">@featured.Name</h3>
                             <p class="text-muted">@featured.Description</p>
                             <p class="fw-bold mb-3">@featured.PricePerPerson.ToString("C0") / Tur</p>
-                            <a asp-controller="Booking" asp-action="Reserve" asp-route-tourId="@featured.Id" class="btn btn-primary w-100">Rezervasyon Yap</a>
+                            @{
+                                var userId = Context.Session.GetInt32("UserId");
+                                var userEmail = Context.Session.GetString("UserEmail");
+                                var isAdmin = Context.Session.GetString("AdminGirisi") == "true";
+                            }
+                            <div id="featuredTourButton" @if (featured != null) { <text>data-tour-id="@featured.Id"</text> }>
+                            @if (isAdmin)
+                            {
+                                <button type="button" class="btn btn-primary w-100" onclick="showTourDetailsModal(@featured.Id)">
+                                    <i class="bi bi-info-circle"></i> Tur Detayları
+                                </button>
+                            }
+                            else if (userId == null && string.IsNullOrEmpty(userEmail))
+                            {
+                                <div class="alert alert-warning mb-3">
+                                    <i class="bi bi-exclamation-triangle"></i> Rezervasyon yapmak için üye girişi yapmalısınız.
+                                </div>
+                                <a asp-controller="Account" asp-action="Register" class="btn btn-primary w-100">
+                                    <i class="bi bi-person-plus"></i> Kayıt Ol / Giriş Yap
+                                </a>
+                            }
+                            else
+                            {
+                                <a asp-controller="Booking" asp-action="Reserve" asp-route-tourId="@featured.Id" class="btn btn-primary w-100">
+                                    <i class="bi bi-calendar-check"></i> Rezervasyon Yap
+                                </a>
+                            }
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -142,11 +169,22 @@
 <section class="py-5">
     <div class="container">
         <div class="text-center mb-5">
-            <h2 class="h2 mb-2">Tarihi</h2>
+            <h2 class="h2 mb-2">Kekova'nın Tarihi</h2>
             <p class="text-muted">
                 Kekova
-                Tarihi, doğası ve pırıl pırıl koylarıyla ünlü Kekova, adını Kale köyü ve Üçağız Köyü’nün tam karşılarında doğudan batıya doğru uzanan ve üzerinde bir çok koyu ve tarihi kalıntıları barındıran Kekova adasından almaktadır. Kekova tarihi, bölgede henüz kazı çalışmaları yapılmadığından dolayı tam olarak bilinmemekle birlikte en az M.Ö 5.yy’la yani günümüzden aşağı yukarı 2500 yıl kadar öncesine dayandığı tahmin edilmektedir. Bir ışık ülkesi olarak adlandırılan Likyalılar dönemine ait bir çok kalıntı ve antik kentlerin yanısıra Bizans ve Roma dönemlerine ait kalıntılar görmek mümkündür.
-                Likyalılar dönemine ait başlıca antik kentler; Kekova’nın batı kısmında bulunan Aperlai ve apollonia antik kentleri, Kekova adası üzerinde bulunan ve batık kent olarak bilinen, yılda binlerce turistin tekne turlarıyla ziyaret ettiği, yüzme ve dalışa yasak olan dolichiste antik kenti, Hemen Kekova adasının karşısında Kale Köyün’de bulunan Simena antik kenti, Üçağız köyünde bulunan Theimussa, Gökkaya koyu üzerinde bulunan Istlada birbirlerine çok yakın olan ve Likya birliğine bağlı olarak yaşayan antik kentlerdir.
+                Tarihi, doğası ve pırıl pırıl koylarıyla ünlü Kekova, adını Kale köyü ve Üçağız Köyü’nün tam karşılarında doğudan batıya doğru uzanan ve üzerinde bir çok koyu ve tarihi kalıntıları barındıran Kekova adasından almaktadır.
+                Kekova tarihi, bölgede henüz kazı çalışmaları yapılmadığından dolayı tam olarak bilinmemekle birlikte en az M.Ö 5.yy’la yani günümüzden aşağı yukarı 2500 yıl kadar öncesine dayandığı tahmin edilmektedir.
+                Bir ışık ülkesi olarak adlandırılan Likyalılar dönemine ait bir çok kalıntı ve antik kentlerin yanısıra Bizans ve Roma dönemlerine ait kalıntılar görmek mümkündür.
+                Likyalılar dönemine ait başlıca antik kentler; Kekova’nın batı kısmında bulunan Aperlai ve apollonia antik kentleri, Kekova adası üzerinde bulunan ve batık kent olarak bilinen, yılda binlerce turistin tekne turlarıyla ziyaret ettiği,
+                yüzme ve dalışa yasak olan dolichiste antik kenti, 
+                Hemen Kekova adasının karşısında Kale Köyün’de bulunan Simena antik kenti, Üçağız köyünde bulunan Theimussa, Gökkaya koyu üzerinde bulunan Istlada birbirlerine çok yakın olan ve Likya birliğine bağlı olarak yaşayan antik kentlerdir.
+            </p>
+            <p>
+                <h2>Keyifli ve Konforlu Yolculuk </h2>
+                Özel tekne turumuz, konfor ve lüksü bir arada sunar. Profesyonel ekibimiz, size eşsiz bir deneyim yaşatmak için her detayı düşünmüştür. 
+                Geniş ve rahat teknelerimiz, güneşlenme alanları, ferah oturma düzeni ve özel yüzme molaları ile size rahat bir yolculuk sunar.
+                Ayrıca, Akdeniz’in taptaze lezzetleriyle dolu özel ikramlarımız da bu turu daha da keyifli hale getirir.
+
             </p>
         </div>
         <div class="row justify-content-center">
@@ -154,7 +192,7 @@
                 <div class="card shadow-sm border-0 fade-in-item">
                     <div class="card-body p-5">
                         <div class="text-center text-muted">
-                            <p class="mb-0">Tarihi bilgiler buraya eklenecektir.</p>
+                            
                         </div>
                     </div>
                 </div>
@@ -190,5 +228,228 @@
             observer.observe(item);
         });
     });
+    
+    // Featured tour butonunu güncelle
+    function updateFeaturedTourButton() {
+        fetch('@Url.Action("CheckSession", "Home")', {
+            method: 'GET',
+            cache: 'no-store',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            const container = document.getElementById('featuredTourButton');
+            if (!container) return;
+            
+            const featuredTourId = container.getAttribute('data-tour-id');
+            if (!featuredTourId || featuredTourId === '0') return;
+            
+            if (data.isAdmin) {
+                container.innerHTML = `
+                    <button type="button" class="btn btn-primary w-100" onclick="showTourDetailsModal(${featuredTourId})">
+                        <i class="bi bi-info-circle"></i> Tur Detayları
+                    </button>
+                `;
+            } else if (data.isUser) {
+                container.innerHTML = `
+                    <a href="@Url.Action("Reserve", "Booking")?tourId=${featuredTourId}" class="btn btn-primary w-100">
+                        <i class="bi bi-calendar-check"></i> Rezervasyon Yap
+                    </a>
+                `;
+            } else {
+                container.innerHTML = `
+                    <div class="alert alert-warning mb-3">
+                        <i class="bi bi-exclamation-triangle"></i> Rezervasyon yapmak için üye girişi yapmalısınız.
+                    </div>
+                    <a href="@Url.Action("Register", "Account")" class="btn btn-primary w-100">
+                        <i class="bi bi-person-plus"></i> Kayıt Ol / Giriş Yap
+                    </a>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Featured tour buton güncelleme hatası:', error);
+        });
+    }
+    
+    // Sayfa yüklendiğinde ve cache'den yüklendiğinde kontrol et
+    window.addEventListener('load', function() {
+        updateFeaturedTourButton();
+    });
+    window.addEventListener('pageshow', function(event) {
+        if (event.persisted) {
+            updateFeaturedTourButton();
+        }
+    });
 </script>
+
+@{
+    var isAdminHome = Context.Session.GetString("AdminGirisi") == "true";
+}
+
+@if (isAdminHome)
+{
+    <script>
+    // Tur Detayları Modal
+    function showTourDetailsModal(tourId) {
+        $.ajax({
+            url: '@Url.Action("GetTourDetails", "Tour")',
+            type: 'GET',
+            data: { id: tourId },
+            dataType: 'json',
+            success: function(response) {
+                if (response.success && response.tour) {
+                    var tour = response.tour;
+                    var priceStr = parseFloat(tour.pricePerPerson).toLocaleString('tr-TR', {
+                        style: 'currency',
+                        currency: 'TRY',
+                        minimumFractionDigits: 0
+                    });
+                    
+                    var modalHtml = '<div class="modal fade" id="tourDetailsModal" tabindex="-1">' +
+                        '<div class="modal-dialog modal-lg modal-dialog-centered">' +
+                        '<div class="modal-content border-0 shadow-lg">' +
+                        '<div class="modal-header bg-primary text-white">' +
+                        '<h5 class="modal-title"><i class="bi bi-info-circle"></i> Tur Detayları</h5>' +
+                        '<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>' +
+                        '</div>' +
+                        '<div class="modal-body p-4">' +
+                        '<div class="row">' +
+                        '<div class="col-md-6 mb-3">' +
+                        '<img src="' + tour.imageUrl + '" alt="' + tour.name + '" class="img-fluid rounded shadow-sm">' +
+                        '</div>' +
+                        '<div class="col-md-6">' +
+                        '<span class="badge bg-primary mb-2">' + (tour.category || 'Genel') + '</span>' +
+                        '<h4 class="mb-3">' + tour.name + '</h4>' +
+                        '<p class="text-muted mb-4">' + (tour.description || 'Açıklama bulunmamaktadır.') + '</p>' +
+                        '<ul class="list-group">' +
+                        '<li class="list-group-item d-flex justify-content-between align-items-center">' +
+                        '<span><i class="bi bi-clock"></i> Tur Süresi</span>' +
+                        '<strong>' + Math.round(tour.duration) + ' saat</strong>' +
+                        '</li>' +
+                        '<li class="list-group-item d-flex justify-content-between align-items-center">' +
+                        '<span><i class="bi bi-people"></i> Maksimum Kapasite</span>' +
+                        '<strong>' + tour.capacity + ' kişi</strong>' +
+                        '</li>' +
+                        '<li class="list-group-item d-flex justify-content-between align-items-center">' +
+                        '<span><i class="bi bi-currency-dollar"></i> Tur Ücreti</span>' +
+                        '<strong class="text-success">' + priceStr + '</strong>' +
+                        '</li>' +
+                        '<li class="list-group-item d-flex justify-content-between align-items-center">' +
+                        '<span><i class="bi bi-toggle-on"></i> Durum</span>' +
+                        '<span class="badge ' + (tour.isActive ? 'bg-success' : 'bg-secondary') + '">' +
+                        (tour.isActive ? 'Aktif' : 'Pasif') +
+                        '</span>' +
+                        '</li>' +
+                        '</ul>' +
+                        '</div>' +
+                        '</div>' +
+                        '</div>' +
+                        '<div class="modal-footer bg-light border-top">' +
+                        '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>' +
+                        '<a href="@Url.Action("Tours", "Admin")" class="btn btn-primary">' +
+                        '<i class="bi bi-pencil-square"></i> Tur Yönetim Paneline Git</a>' +
+                        '</div>' +
+                        '</div>' +
+                        '</div>' +
+                        '</div>';
+                    
+                    $('#tourDetailsModal').remove();
+                    $('body').append(modalHtml);
+                    
+                    var modalElement = $('#tourDetailsModal')[0];
+                    var modal = new bootstrap.Modal(modalElement);
+                    modal.show();
+                    
+                    $(modalElement).on('hidden.bs.modal', function() {
+                        $(this).remove();
+                    });
+                } else {
+                    alert('Tur bilgileri yüklenirken bir hata oluştu.');
+                }
+            },
+            error: function() {
+                alert('Tur bilgileri yüklenirken bir hata oluştu.');
+            }
+        });
+    }
+    </script>
+}
+
+<style>
+    /* Animasyonlu Telefon Butonu */
+    .animated-phone-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 24px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        text-decoration: none;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .animated-phone-button::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+    }
+    
+    .animated-phone-button:hover::before {
+        width: 300px;
+        height: 300px;
+    }
+    
+    .animated-phone-button:hover {
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+    }
+    
+    .animated-phone-button:active {
+        transform: translateY(-1px) scale(1.02);
+    }
+    
+    .phone-icon {
+        font-size: 1.5rem;
+        animation: phoneRing 2s ease-in-out infinite;
+        display: inline-block;
+    }
+    
+    @@keyframes phoneRing {
+        0%, 100% {
+            transform: rotate(0deg);
+        }
+        10%, 30%, 50%, 70%, 90% {
+            transform: rotate(-10deg);
+        }
+        20%, 40%, 60%, 80% {
+            transform: rotate(10deg);
+        }
+    }
+    
+    .phone-number {
+        position: relative;
+        z-index: 1;
+    }
+    
+    .animated-phone-button .phone-icon {
+        position: relative;
+        z-index: 1;
+    }
+</style>
 

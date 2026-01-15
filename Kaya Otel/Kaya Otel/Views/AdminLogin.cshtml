@@ -21,14 +21,14 @@
     <div class="card shadow-sm admin-login-card">
         <div class="card-body">
             <h2 class="h4 text-center mb-4">Admin Girişi</h2>
-            <form asp-action="Login" method="post" class="d-grid gap-3">
+            <form asp-action="Login" method="post" class="d-grid gap-3" autocomplete="off">
                 <div>
                     <label class="form-label">Kullanıcı Adı</label>
                     <input type="text" name="UserName" class="form-control" required />
                 </div>
                 <div>
                     <label class="form-label">Şifre</label>
-                    <input type="password" name="Password" class="form-control" required />
+                    <input type="password" name="Password" class="form-control" required autocomplete="off" value="" />
                 </div>
                 <button type="submit" class="btn btn-primary">Giriş Yap</button>
             </form>

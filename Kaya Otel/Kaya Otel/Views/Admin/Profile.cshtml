@@ -1,0 +1,71 @@
+@model Kaya_Otel.Models.Admin
+
+@{
+    ViewData["Title"] = "Profil ve Ayarlar";
+}
+
+<section class="py-5">
+    <div class="container">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle"></i> @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle"></i> @TempData["ErrorMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+        
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0"><i class="bi bi-person-circle"></i> Profil Bilgileri</h4>
+                    </div>
+                    <div class="card-body">
+                        <form asp-action="UpdateProfile" method="post">
+                            <div class="mb-3">
+                                <label class="form-label"><i class="bi bi-person"></i> Ad Soyad</label>
+                                <input type="text" name="Name" class="form-control" value="@Model.Name" required />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label"><i class="bi bi-envelope"></i> E-posta</label>
+                                <input type="email" class="form-control" value="@Model.Email" disabled />
+                                <small class="text-muted">E-posta adresi değiştirilemez.</small>
+                            </div>
+                            <hr />
+                            <h5 class="mb-3"><i class="bi bi-key"></i> Şifre Değiştir</h5>
+                            <div class="mb-3">
+                                <label class="form-label">Mevcut Şifre</label>
+                                <input type="password" name="CurrentPassword" class="form-control" placeholder="Mevcut şifrenizi girin" />
+                                <small class="text-muted">Şifre değiştirmek istemiyorsanız boş bırakın.</small>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Yeni Şifre</label>
+                                <input type="password" name="NewPassword" class="form-control" placeholder="Yeni şifrenizi girin" />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Yeni Şifre Tekrar</label>
+                                <input type="password" name="ConfirmPassword" class="form-control" placeholder="Yeni şifrenizi tekrar girin" />
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <a asp-action="Dashboard" class="btn btn-outline-secondary">
+                                    <i class="bi bi-arrow-left"></i> Geri
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-save"></i> Kaydet
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+

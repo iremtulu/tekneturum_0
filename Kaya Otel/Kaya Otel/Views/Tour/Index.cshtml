@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Turlar";
+    var isAdmin = Context.Session.GetString("AdminGirisi") == "true";
 }
 
 <section class="py-5 bg-light">
@@ -24,7 +25,16 @@
                             <p class="card-text text-muted">@tour.Description</p>
                             <div class="mt-auto">
                                 <p class="fw-bold mb-3">@tour.PricePerPerson.ToString("C0") / Tur</p>
-                                <a asp-action="Details" asp-route-id="@tour.Id" class="btn btn-outline-primary w-100">Detayları Gör</a>
+                                @if (isAdmin)
+                                {
+                                    <button type="button" class="btn btn-primary w-100" onclick="showTourDetailsModal(@tour.Id)">
+                                        <i class="bi bi-info-circle"></i> Tur Detayları
+                                    </button>
+                                }
+                                else
+                                {
+                                    <a asp-action="Details" asp-route-id="@tour.Id" class="btn btn-outline-primary w-100">Detayları Gör</a>
+                                }
                             </div>
                         </div>
                     </div>
@@ -33,4 +43,93 @@
         </div>
     </div>
 </section>
+
+@if (isAdmin)
+{
+    <script>
+        // Tur Detayları Modal
+        function showTourDetailsModal(tourId) {
+            $.ajax({
+                url: '@Url.Action("GetTourDetails", "Tour")',
+                type: 'GET',
+                data: { id: tourId },
+                dataType: 'json',
+                success: function(response) {
+                    if (response.success && response.tour) {
+                        var tour = response.tour;
+                        var priceStr = parseFloat(tour.pricePerPerson).toLocaleString('tr-TR', {
+                            style: 'currency',
+                            currency: 'TRY',
+                            minimumFractionDigits: 0
+                        });
+                        
+                        var modalHtml = '<div class="modal fade" id="tourDetailsModal" tabindex="-1">' +
+                            '<div class="modal-dialog modal-lg modal-dialog-centered">' +
+                            '<div class="modal-content border-0 shadow-lg">' +
+                            '<div class="modal-header bg-primary text-white">' +
+                            '<h5 class="modal-title"><i class="bi bi-info-circle"></i> Tur Detayları</h5>' +
+                            '<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>' +
+                            '</div>' +
+                            '<div class="modal-body p-4">' +
+                            '<div class="row">' +
+                            '<div class="col-md-6 mb-3">' +
+                            '<img src="' + tour.imageUrl + '" alt="' + tour.name + '" class="img-fluid rounded shadow-sm">' +
+                            '</div>' +
+                            '<div class="col-md-6">' +
+                            '<span class="badge bg-primary mb-2">' + (tour.category || 'Genel') + '</span>' +
+                            '<h4 class="mb-3">' + tour.name + '</h4>' +
+                            '<p class="text-muted mb-4">' + (tour.description || 'Açıklama bulunmamaktadır.') + '</p>' +
+                            '<ul class="list-group">' +
+                            '<li class="list-group-item d-flex justify-content-between align-items-center">' +
+                            '<span><i class="bi bi-clock"></i> Tur Süresi</span>' +
+                            '<strong>' + Math.round(tour.duration) + ' saat</strong>' +
+                            '</li>' +
+                            '<li class="list-group-item d-flex justify-content-between align-items-center">' +
+                            '<span><i class="bi bi-people"></i> Maksimum Kapasite</span>' +
+                            '<strong>' + tour.capacity + ' kişi</strong>' +
+                            '</li>' +
+                            '<li class="list-group-item d-flex justify-content-between align-items-center">' +
+                            '<span><i class="bi bi-currency-dollar"></i> Tur Ücreti</span>' +
+                            '<strong class="text-success">' + priceStr + '</strong>' +
+                            '</li>' +
+                            '<li class="list-group-item d-flex justify-content-between align-items-center">' +
+                            '<span><i class="bi bi-toggle-on"></i> Durum</span>' +
+                            '<span class="badge ' + (tour.isActive ? 'bg-success' : 'bg-secondary') + '">' +
+                            (tour.isActive ? 'Aktif' : 'Pasif') +
+                            '</span>' +
+                            '</li>' +
+                            '</ul>' +
+                            '</div>' +
+                            '</div>' +
+                            '</div>' +
+                            '<div class="modal-footer bg-light border-top">' +
+                            '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>' +
+                            '<a href="@Url.Action("Tours", "Admin")" class="btn btn-primary">' +
+                            '<i class="bi bi-pencil-square"></i> Tur Yönetim Paneline Git</a>' +
+                            '</div>' +
+                            '</div>' +
+                            '</div>' +
+                            '</div>';
+                        
+                        $('#tourDetailsModal').remove();
+                        $('body').append(modalHtml);
+                        
+                        var modalElement = $('#tourDetailsModal')[0];
+                        var modal = new bootstrap.Modal(modalElement);
+                        modal.show();
+                        
+                        $(modalElement).on('hidden.bs.modal', function() {
+                            $(this).remove();
+                        });
+                    } else {
+                        alert('Tur bilgileri yüklenirken bir hata oluştu.');
+                    }
+                },
+                error: function() {
+                    alert('Tur bilgileri yüklenirken bir hata oluştu.');
+                }
+            });
+        }
+    </script>
+}
 

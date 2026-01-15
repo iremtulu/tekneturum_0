@@ -1,41 +1,917 @@
 @{
-    ViewData["Title"] = "Yönetim Paneli";
+    ViewData["Title"] = "Yönetim Paneli - Dashboard";
+    var upcomingTours = ViewBag.UpcomingTours as dynamic;
+    var monthlyRevenueData = ViewBag.MonthlyRevenueData as dynamic;
+    var toursByCategory = ViewBag.ToursByCategory as dynamic;
 }
 
-<section class="py-5">
-    <div class="container">
-        <h1 class="h3 mb-4">Yönetim Paneli</h1>
-        <div class="row g-4">
-            <div class="col-md-4">
-                <div class="card shadow-sm">
-                    <div class="card-body text-center">
-                        <h2 class="display-5">@ViewBag.TourCount</h2>
-                        <p class="text-muted mb-0">Aktif Tur</p>
+<div class="admin-content">
+    <div class="container-fluid py-4 dashboard-container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 mb-0">
+                <i class="bi bi-speedometer2"></i> Dashboard
+            </h1>
+            <div class="text-muted">
+                <i class="bi bi-calendar3"></i> @DateTime.Now.ToString("dd MMMM yyyy, dddd")
+            </div>
+        </div>
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle"></i> @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+
+        <!-- İstatistik Kartları -->
+        <div class="row g-4 mb-4">
+            <div class="col-xl-3 col-md-6">
+                <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <div class="card-body text-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-white-50 mb-2">Aylık Ciro</h6>
+                                <h2 class="mb-0">@ViewBag.MonthlyRevenue.ToString("C0")</h2>
+                                <small class="text-white-50">Bu ay</small>
+                            </div>
+                            <div class="fs-1 opacity-50">
+                                <i class="bi bi-currency-dollar"></i>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="card shadow-sm">
-                    <div class="card-body text-center">
-                        <h2 class="display-5">@ViewBag.BookingCount</h2>
-                        <p class="text-muted mb-0">Rezervasyon</p>
+
+            <div class="col-xl-3 col-md-6">
+                <div class="card border-0 shadow-sm h-100 revenue-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); cursor: pointer;" onclick="showRevenueModal()">
+                    <div class="card-body text-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-white-50 mb-2">Toplam Ciro <i class="bi bi-info-circle" style="font-size: 0.8rem;"></i></h6>
+                                <h2 class="mb-0">@ViewBag.TotalRevenue.ToString("C0")</h2>
+                                <small class="text-white-50">Tüm zamanlar - Detay için tıklayın</small>
+                            </div>
+                            <div class="fs-1 opacity-50">
+                                <i class="bi bi-graph-up-arrow"></i>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="card shadow-sm">
-                    <div class="card-body text-center">
-                        <h2 class="display-5">@ViewBag.PaymentCount</h2>
-                        <p class="text-muted mb-0">Kapora Ödemesi</p>
+
+            <div class="col-xl-3 col-md-6">
+                <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                    <div class="card-body text-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-white-50 mb-2">Aktif Turlar</h6>
+                                <h2 class="mb-0">@ViewBag.TourCount</h2>
+                                <small class="text-white-50">Toplam tur sayısı</small>
+                            </div>
+                            <div class="fs-1 opacity-50">
+                                <i class="bi bi-airplane"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6">
+                <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                    <div class="card-body text-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-white-50 mb-2">Bu Ay Rezervasyon</h6>
+                                <h2 class="mb-0">@ViewBag.MonthlyBookings</h2>
+                                <small class="text-white-50">Yeni rezervasyonlar</small>
+                            </div>
+                            <div class="fs-1 opacity-50">
+                                <i class="bi bi-calendar-check"></i>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="mt-4 d-flex gap-2">
-            <a asp-action="Tours" class="btn btn-primary">Turları Yönet</a>
-            <a asp-action="Bookings" class="btn btn-outline-secondary">Rezervasyonlar</a>
-            <a asp-action="Payments" class="btn btn-outline-secondary">Ödemeler</a>
+
+        <!-- İkinci Satır İstatistikler -->
+        <div class="row g-4 mb-4">
+            <div class="col-xl-3 col-md-6">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-2">Toplam Rezervasyon</h6>
+                                <h3 class="mb-0">@ViewBag.BookingCount</h3>
+                            </div>
+                            <div class="text-primary fs-1">
+                                <i class="bi bi-bookmark-check"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-2">Ödemeler</h6>
+                                <h3 class="mb-0">@ViewBag.PaymentCount</h3>
+                            </div>
+                            <div class="text-success fs-1">
+                                <i class="bi bi-credit-card"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6">
+                <div class="card border-0 shadow-sm users-card" style="cursor: pointer;" onclick="showUsersModal()">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-2">Kayıtlı Kullanıcılar <i class="bi bi-info-circle" style="font-size: 0.8rem;"></i></h6>
+                                <h3 class="mb-0">@ViewBag.UserCount</h3>
+                                <small class="text-muted">Detay için tıklayın</small>
+                            </div>
+                            <div class="text-info fs-1">
+                                <i class="bi bi-people"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-2">Yaklaşan Turlar</h6>
+                                <h3 class="mb-0">@{
+                                    var upcomingCount = 0;
+                                    if (upcomingTours != null)
+                                    {
+                                        var toursList = upcomingTours as IEnumerable<dynamic>;
+                                        upcomingCount = toursList != null ? toursList.Count() : 0;
+                                    }
+                                }@upcomingCount</h3>
+                            </div>
+                            <div class="text-warning fs-1">
+                                <i class="bi bi-clock-history"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Aylık Ciro Grafiği -->
+            <div class="col-xl-8">
+                <div class="card border-0 shadow-sm" style="cursor: pointer;" onclick="showRevenueChartModal()">
+                    <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-graph-up text-primary"></i> Son 6 Ay Ciro Grafiği
+                        </h5>
+                        <span class="text-muted small">
+                            <i class="bi bi-arrows-fullscreen"></i> Detaylı görünüm için tıklayın
+                        </span>
+                    </div>
+                    <div class="card-body p-4">
+                        <canvas id="revenueChart" height="100"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kategori Dağılımı -->
+            <div class="col-xl-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white border-bottom">
+                        <h5 class="mb-0">
+                            <i class="bi bi-pie-chart"></i> Tur Kategorileri
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="categoryChart" height="250"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Yaklaşan Turlar -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-calendar-event"></i> Yaklaşan Turlar (Önümüzdeki 30 Gün)
+                        </h5>
+                        <a asp-action="Bookings" class="btn btn-sm btn-outline-primary">
+                            Tümünü Gör <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        @if (upcomingTours != null)
+                        {
+                            var toursList = upcomingTours as IEnumerable<dynamic>;
+                            @if (toursList != null && toursList.Any())
+                            {
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Tur Adı</th>
+                                                <th>Tarih</th>
+                                                <th>Müşteri</th>
+                                                <th>Kişi Sayısı</th>
+                                                <th>Tutar</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var tour in toursList)
+                                            {
+                                                <tr style="cursor: pointer;" onclick="showTourDetail(@(tour?.Id ?? 0), '@(tour?.TourName ?? "")', '@(tour?.TourDate != null ? ((DateTime)tour.TourDate).ToString("dd MMMM yyyy, dddd") : "")', '@(tour?.CustomerName ?? "")', @(tour?.Guests ?? 0), @(tour?.TotalAmount ?? 0))">
+                                                    <td><strong>@(tour?.TourName ?? "")</strong></td>
+                                                    <td>
+                                                        <i class="bi bi-calendar3"></i> 
+                                                        @(tour?.TourDate != null ? ((DateTime)tour.TourDate).ToString("dd MMMM yyyy, dddd") : "")
+                                                    </td>
+                                                    <td>@(tour?.CustomerName ?? "")</td>
+                                                    <td><span class="badge bg-info">@(tour?.Guests ?? 0) kişi</span></td>
+                                                    <td><strong>@(tour?.TotalAmount != null ? ((decimal)tour.TotalAmount).ToString("C0") : "0 ₺")</strong></td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="text-center py-5 text-muted">
+                                    <i class="bi bi-calendar-x fs-1"></i>
+                                    <p class="mt-3">Yaklaşan tur bulunmamaktadır.</p>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="text-center py-5 text-muted">
+                                <i class="bi bi-calendar-x fs-1"></i>
+                                <p class="mt-3">Yaklaşan tur bulunmamaktadır.</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-</section>
+</div>
 
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<script>
+    // Aylık Ciro Grafiği - Kullanıcı Odaklı Tasarım
+    const revenueData = @Html.Raw(Json.Serialize(ViewBag.MonthlyRevenueData));
+    const revenueLabels = revenueData.map(item => item.month || item.monthShort || item.Month);
+    const revenueValues = revenueData.map(item => item.revenue || item.Revenue);
+
+    const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+    
+    // Gradient oluştur
+    const gradient = revenueCtx.createLinearGradient(0, 0, 0, 400);
+    gradient.addColorStop(0, 'rgba(102, 126, 234, 0.3)');
+    gradient.addColorStop(0.5, 'rgba(102, 126, 234, 0.15)');
+    gradient.addColorStop(1, 'rgba(102, 126, 234, 0.05)');
+    
+    new Chart(revenueCtx, {
+        type: 'line',
+        data: {
+            labels: revenueLabels,
+            datasets: [{
+                label: 'Aylık Ciro',
+                data: revenueValues,
+                borderColor: 'rgb(102, 126, 234)',
+                backgroundColor: gradient,
+                borderWidth: 3,
+                pointRadius: 6,
+                pointHoverRadius: 8,
+                pointBackgroundColor: '#fff',
+                pointBorderColor: 'rgb(102, 126, 234)',
+                pointBorderWidth: 2,
+                pointHoverBackgroundColor: 'rgb(102, 126, 234)',
+                pointHoverBorderColor: '#fff',
+                pointHoverBorderWidth: 3,
+                tension: 0.4,
+                fill: true,
+                cubicInterpolationMode: 'monotone'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            interaction: {
+                intersect: false,
+                mode: 'index'
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: {
+                        usePointStyle: true,
+                        padding: 15,
+                        font: {
+                            size: 13,
+                            weight: '500'
+                        },
+                        color: '#495057'
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    padding: 12,
+                    titleFont: {
+                        size: 14,
+                        weight: 'bold'
+                    },
+                    bodyFont: {
+                        size: 13
+                    },
+                    displayColors: false,
+                    callbacks: {
+                        label: function(context) {
+                            let value = context.parsed.y;
+                            return 'Ciro: ' + value.toLocaleString('tr-TR', { 
+                                style: 'currency', 
+                                currency: 'TRY', 
+                                minimumFractionDigits: 0 
+                            });
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        display: false,
+                        drawBorder: false
+                    },
+                    ticks: {
+                        font: {
+                            size: 11,
+                            weight: '500'
+                        },
+                        color: '#6c757d',
+                        padding: 10
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)',
+                        drawBorder: false
+                    },
+                    ticks: {
+                        font: {
+                            size: 11,
+                            weight: '500'
+                        },
+                        color: '#6c757d',
+                        padding: 10,
+                        callback: function(value) {
+                            return value.toLocaleString('tr-TR', { 
+                                style: 'currency', 
+                                currency: 'TRY', 
+                                minimumFractionDigits: 0,
+                                maximumFractionDigits: 0
+                            });
+                        }
+                    }
+                }
+            },
+            animation: {
+                duration: 1500,
+                easing: 'easeInOutQuart'
+            }
+        }
+    });
+
+    // Kategori Dağılımı Grafiği
+    const categoryData = @Html.Raw(Json.Serialize(ViewBag.ToursByCategory));
+    const categoryLabels = categoryData.map(item => item.category || item.Category || 'Diğer');
+    const categoryValues = categoryData.map(item => item.count || item.Count);
+
+    const categoryColors = [
+        'rgba(102, 126, 234, 0.8)',
+        'rgba(240, 147, 251, 0.8)',
+        'rgba(67, 233, 123, 0.8)',
+        'rgba(79, 172, 254, 0.8)',
+        'rgba(255, 159, 64, 0.8)'
+    ];
+
+    const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+    new Chart(categoryCtx, {
+        type: 'doughnut',
+        data: {
+            labels: categoryLabels,
+            datasets: [{
+                data: categoryValues,
+                backgroundColor: categoryColors.slice(0, categoryLabels.length),
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+</script>
+
+<style>
+    .dashboard-container {
+        width: 100%;
+        max-width: 100%;
+        padding: 0;
+    }
+
+    .card {
+        transition: transform 0.2s, box-shadow 0.2s;
+        border-radius: 12px;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+    
+    /* Dashboard içeriği için daha geniş ve rahat görünüm */
+    .dashboard-container .row {
+        margin-left: 0;
+        margin-right: 0;
+    }
+    
+    .dashboard-container .row > * {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+    
+    .revenue-card {
+        transition: all 0.3s ease;
+    }
+    
+    .revenue-card:hover {
+        transform: translateY(-8px) !important;
+        box-shadow: 0 15px 35px rgba(240, 147, 251, 0.3) !important;
+    }
+    
+    .users-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+    }
+    
+    .table-hover tbody tr:hover {
+        background-color: #e9ecef !important;
+    }
+    
+    /* Grafik Kartı Hover Efekti */
+    .card[onclick="showRevenueChartModal()"] {
+        transition: all 0.3s ease;
+    }
+    
+    .card[onclick="showRevenueChartModal()"]:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1) !important;
+    }
+    
+    .card[onclick="showRevenueChartModal()"]:hover .bi-arrows-fullscreen {
+        transform: scale(1.1);
+        color: #667eea;
+    }
+    
+    .card[onclick="showRevenueChartModal()"] .bi-arrows-fullscreen {
+        transition: all 0.3s ease;
+        display: inline-block;
+    }
+</style>
+
+<script>
+    // Toplam Ciro Modal - Modern Kart Tasarımı
+    function showRevenueModal() {
+        var modalHtml = '<div class="modal fade" id="revenueModal" tabindex="-1">' +
+            '<div class="modal-dialog modal-xl">' +
+            '<div class="modal-content border-0 shadow-lg">' +
+            '<div class="modal-header bg-gradient text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 0.375rem 0.375rem 0 0;">' +
+            '<h5 class="modal-title"><i class="bi bi-graph-up-arrow"></i> Detaylı Ciro Bilgileri</h5>' +
+            '<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>' +
+            '</div>' +
+            '<div class="modal-body p-4">' +
+            '<div id="revenueCardsContainer" class="row g-3">' +
+            '<div class="col-12 text-center"><div class="spinner-border text-primary"></div></div>' +
+            '</div>' +
+            '</div>' +
+            '<div class="modal-footer bg-light border-top">' +
+            '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>' +
+            '</div>' +
+            '</div>' +
+            '</div>' +
+            '</div>';
+        
+        $('#revenueModal').remove();
+        $('body').append(modalHtml);
+        
+        var modalElement = $('#revenueModal')[0];
+        var modal = new bootstrap.Modal(modalElement);
+        modal.show();
+        
+        // Verileri yükle
+        $.ajax({
+            url: '@Url.Action("RevenueDetails", "Admin")',
+            type: 'GET',
+            dataType: 'json',
+            success: function(data) {
+                var container = $('#revenueCardsContainer');
+                container.empty();
+                
+                if (data && data.length > 0) {
+                    data.forEach(function(item) {
+                        var tourDate = new Date(item.tourDate);
+                        var dateStr = tourDate.toLocaleDateString('tr-TR', { 
+                            day: '2-digit', month: 'long', year: 'numeric'
+                        });
+                        var revenueStr = parseFloat(item.revenue).toLocaleString('tr-TR', { 
+                            style: 'currency', currency: 'TRY', minimumFractionDigits: 0
+                        });
+                        
+                        var statusBadge = item.isCompleted 
+                            ? '<span class="badge bg-success rounded-pill"><i class="bi bi-check-circle"></i> Tamamlandı</span>' 
+                            : '<span class="badge bg-warning text-dark rounded-pill"><i class="bi bi-clock"></i> Kapora Ödendi</span>';
+                        
+                        var cardHtml = '<div class="col-md-6 col-lg-4">' +
+                            '<div class="card h-100 border-0 shadow-sm revenue-card-item" style="transition: all 0.3s ease;">' +
+                            '<div class="card-body">' +
+                            '<div class="d-flex justify-content-between align-items-start mb-2">' +
+                            '<h6 class="card-title mb-0 text-primary"><i class="bi bi-airplane"></i> ' + (item.tourName || 'N/A') + '</h6>' +
+                            statusBadge +
+                            '</div>' +
+                            '<hr class="my-2">' +
+                            '<div class="mb-2"><small class="text-muted"><i class="bi bi-calendar3"></i> Tarih:</small><br><strong>' + dateStr + '</strong></div>' +
+                            '<div class="mb-2"><small class="text-muted"><i class="bi bi-person"></i> Müşteri:</small><br>' + (item.customerName || 'N/A') + '</div>' +
+                            '<div class="mb-2"><small class="text-muted"><i class="bi bi-people"></i> Kişi:</small><br><span class="badge bg-info">' + (item.guests || 0) + ' kişi</span></div>' +
+                            '<div class="mt-3 pt-2 border-top">' +
+                            '<small class="text-muted d-block mb-1">Ciro:</small>' +
+                            '<h5 class="mb-0 text-success"><strong>' + revenueStr + '</strong></h5>' +
+                            '</div>' +
+                            '</div>' +
+                            '</div>' +
+                            '</div>';
+                        container.append(cardHtml);
+                    });
+                    
+                    // Hover efektleri için
+                    $('.revenue-card-item').hover(
+                        function() { $(this).css('transform', 'translateY(-5px)').css('box-shadow', '0 8px 20px rgba(0,0,0,0.15)'); },
+                        function() { $(this).css('transform', 'translateY(0)').css('box-shadow', '0 2px 8px rgba(0,0,0,0.1)'); }
+                    );
+                } else {
+                    container.html('<div class="col-12 text-center py-5 text-muted"><i class="bi bi-inbox fs-1 d-block mb-3"></i>Henüz ciro kaydı bulunmamaktadır.</div>');
+                }
+            },
+            error: function() {
+                $('#revenueCardsContainer').html('<div class="col-12 text-center py-5 text-danger"><i class="bi bi-exclamation-triangle fs-1 d-block mb-3"></i>Veriler yüklenirken bir hata oluştu.</div>');
+            }
+        });
+        
+        $(modalElement).on('hidden.bs.modal', function() {
+            $(this).remove();
+        });
+    }
+    
+    // Kullanıcılar Modal
+    function showUsersModal() {
+        var modalHtml = '<div class="modal fade" id="usersModal" tabindex="-1">' +
+            '<div class="modal-dialog modal-xl">' +
+            '<div class="modal-content">' +
+            '<div class="modal-header bg-info text-white">' +
+            '<h5 class="modal-title"><i class="bi bi-people"></i> Kayıtlı Kullanıcılar</h5>' +
+            '<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>' +
+            '</div>' +
+            '<div class="modal-body">' +
+            '<div class="table-responsive">' +
+            '<table class="table table-hover">' +
+            '<thead class="table-light">' +
+            '<tr><th>ID</th><th>Ad Soyad</th><th>E-posta</th><th>Kayıt Tarihi</th></tr>' +
+            '</thead>' +
+            '<tbody id="usersTableBody">' +
+            '<tr><td colspan="4" class="text-center"><div class="spinner-border text-primary"></div></td></tr>' +
+            '</tbody>' +
+            '</table>' +
+            '</div>' +
+            '</div>' +
+            '<div class="modal-footer">' +
+            '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>' +
+            '</div>' +
+            '</div>' +
+            '</div>' +
+            '</div>';
+        
+        $('#usersModal').remove();
+        $('body').append(modalHtml);
+        
+        var modalElement = $('#usersModal')[0];
+        var modal = new bootstrap.Modal(modalElement);
+        modal.show();
+        
+        // Verileri yükle
+        $.ajax({
+            url: '@Url.Action("GetUsers", "Admin")',
+            type: 'GET',
+            dataType: 'json',
+            success: function(data) {
+                var tbody = $('#usersTableBody');
+                tbody.empty();
+                
+                if (data && data.users && data.users.length > 0) {
+                    data.users.forEach(function(user) {
+                        var date = new Date(user.createdAt);
+                        var dateStr = date.toLocaleDateString('tr-TR', { 
+                            day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                        });
+                        var row = '<tr>' +
+                            '<td>' + user.id + '</td>' +
+                            '<td><strong>' + (user.name || 'N/A') + '</strong></td>' +
+                            '<td>' + (user.email || 'N/A') + '</td>' +
+                            '<td>' + dateStr + '</td>' +
+                            '</tr>';
+                        tbody.append(row);
+                    });
+                } else {
+                    tbody.append('<tr><td colspan="4" class="text-center text-muted">Henüz kullanıcı kaydı bulunmamaktadır.</td></tr>');
+                }
+            },
+            error: function() {
+                $('#usersTableBody').html('<tr><td colspan="4" class="text-center text-danger">Veriler yüklenirken bir hata oluştu.</td></tr>');
+            }
+        });
+        
+        $(modalElement).on('hidden.bs.modal', function() {
+            $(this).remove();
+        });
+    }
+    
+    // Tur Detay Modal
+    function showTourDetail(id, tourName, tourDate, customerName, guests, totalAmount) {
+        var amountStr = parseFloat(totalAmount).toLocaleString('tr-TR', { 
+            style: 'currency', currency: 'TRY', minimumFractionDigits: 0
+        });
+        
+        var modalHtml = '<div class="modal fade" id="tourDetailModal" tabindex="-1">' +
+            '<div class="modal-dialog modal-lg">' +
+            '<div class="modal-content">' +
+            '<div class="modal-header bg-primary text-white">' +
+            '<h5 class="modal-title"><i class="bi bi-calendar-event"></i> Tur Detayları</h5>' +
+            '<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>' +
+            '</div>' +
+            '<div class="modal-body">' +
+            '<div class="mb-3"><strong>Tur Adı:</strong><p class="mt-1">' + tourName + '</p></div>' +
+            '<div class="mb-3"><strong>Tarih:</strong><p class="mt-1"><i class="bi bi-calendar3"></i> ' + tourDate + '</p></div>' +
+            '<div class="mb-3"><strong>Müşteri:</strong><p class="mt-1">' + customerName + '</p></div>' +
+            '<div class="mb-3"><strong>Kişi Sayısı:</strong><p class="mt-1"><span class="badge bg-info">' + guests + ' kişi</span></p></div>' +
+            '<div class="mb-3"><strong>Toplam Tutar:</strong><p class="mt-1"><strong class="text-success">' + amountStr + '</strong></p></div>' +
+            '</div>' +
+            '<div class="modal-footer">' +
+            '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>' +
+            '</div>' +
+            '</div>' +
+            '</div>' +
+            '</div>';
+        
+        $('#tourDetailModal').remove();
+        $('body').append(modalHtml);
+        
+        var modalElement = $('#tourDetailModal')[0];
+        var modal = new bootstrap.Modal(modalElement);
+        modal.show();
+        
+        $(modalElement).on('hidden.bs.modal', function() {
+            $(this).remove();
+        });
+    }
+    
+    // Ciro Grafiği Modal
+    function showRevenueChartModal() {
+        var revenueData = @Html.Raw(Json.Serialize(ViewBag.MonthlyRevenueData));
+        var categoryData = @Html.Raw(Json.Serialize(ViewBag.ToursByCategory));
+        
+        var revenueLabels = revenueData.map(item => item.month || item.Month);
+        var revenueValues = revenueData.map(item => item.revenue || item.Revenue);
+        var categoryLabels = categoryData.map(item => item.category || item.Category || 'Diğer');
+        var categoryValues = categoryData.map(item => item.count || item.Count);
+        
+        var modalHtml = '<div class="modal fade" id="revenueChartModal" tabindex="-1">' +
+            '<div class="modal-dialog modal-fullscreen">' +
+            '<div class="modal-content">' +
+            '<div class="modal-header bg-primary text-white">' +
+            '<h5 class="modal-title"><i class="bi bi-graph-up"></i> Detaylı Ciro Analizi</h5>' +
+            '<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>' +
+            '</div>' +
+            '<div class="modal-body">' +
+            '<div class="row">' +
+            '<div class="col-md-8 mb-4">' +
+            '<h6 class="mb-3">Son 6 Ay Ciro Grafiği</h6>' +
+            '<canvas id="revenueChartModalCanvas" height="80"></canvas>' +
+            '</div>' +
+            '<div class="col-md-4 mb-4">' +
+            '<h6 class="mb-3">Kategori Dağılımı</h6>' +
+            '<canvas id="categoryChartModalCanvas" height="80"></canvas>' +
+            '</div>' +
+            '</div>' +
+            '</div>' +
+            '<div class="modal-footer">' +
+            '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>' +
+            '</div>' +
+            '</div>' +
+            '</div>' +
+            '</div>';
+        
+        $('#revenueChartModal').remove();
+        $('body').append(modalHtml);
+        
+        var modalElement = $('#revenueChartModal')[0];
+        var modal = new bootstrap.Modal(modalElement);
+        modal.show();
+        
+        // Grafikleri oluştur
+        setTimeout(function() {
+            var revenueCtx = document.getElementById('revenueChartModalCanvas');
+            if (revenueCtx) {
+                var ctx = revenueCtx.getContext('2d');
+                var modalGradient = ctx.createLinearGradient(0, 0, 0, 600);
+                modalGradient.addColorStop(0, 'rgba(102, 126, 234, 0.3)');
+                modalGradient.addColorStop(0.5, 'rgba(102, 126, 234, 0.15)');
+                modalGradient.addColorStop(1, 'rgba(102, 126, 234, 0.05)');
+                
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: revenueLabels,
+                        datasets: [{
+                            label: 'Aylık Ciro',
+                            data: revenueValues,
+                            borderColor: 'rgb(102, 126, 234)',
+                            backgroundColor: modalGradient,
+                            borderWidth: 4,
+                            pointRadius: 8,
+                            pointHoverRadius: 10,
+                            pointBackgroundColor: '#fff',
+                            pointBorderColor: 'rgb(102, 126, 234)',
+                            pointBorderWidth: 3,
+                            pointHoverBackgroundColor: 'rgb(102, 126, 234)',
+                            pointHoverBorderColor: '#fff',
+                            pointHoverBorderWidth: 4,
+                            tension: 0.4,
+                            fill: true,
+                            cubicInterpolationMode: 'monotone'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        interaction: {
+                            intersect: false,
+                            mode: 'index'
+                        },
+                        plugins: {
+                            legend: { 
+                                display: true, 
+                                position: 'top',
+                                labels: {
+                                    usePointStyle: true,
+                                    padding: 20,
+                                    font: {
+                                        size: 14,
+                                        weight: '600'
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                padding: 15,
+                                titleFont: {
+                                    size: 16,
+                                    weight: 'bold'
+                                },
+                                bodyFont: {
+                                    size: 14
+                                },
+                                displayColors: false,
+                                callbacks: {
+                                    label: function(context) {
+                                        let value = context.parsed.y;
+                                        return 'Ciro: ' + value.toLocaleString('tr-TR', { 
+                                            style: 'currency', 
+                                            currency: 'TRY', 
+                                            minimumFractionDigits: 0 
+                                        });
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: {
+                                    display: false,
+                                    drawBorder: false
+                                },
+                                ticks: {
+                                    font: {
+                                        size: 12,
+                                        weight: '500'
+                                    },
+                                    color: '#6c757d',
+                                    padding: 15
+                                }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: 'rgba(0, 0, 0, 0.05)',
+                                    drawBorder: false
+                                },
+                                ticks: {
+                                    font: {
+                                        size: 12,
+                                        weight: '500'
+                                    },
+                                    color: '#6c757d',
+                                    padding: 15,
+                                    callback: function(value) {
+                                        return value.toLocaleString('tr-TR', { 
+                                            style: 'currency', 
+                                            currency: 'TRY', 
+                                            minimumFractionDigits: 0,
+                                            maximumFractionDigits: 0
+                                        });
+                                    }
+                                }
+                            }
+                        },
+                        animation: {
+                            duration: 2000,
+                            easing: 'easeInOutQuart'
+                        }
+                    }
+                });
+            }
+            
+            var categoryCtx = document.getElementById('categoryChartModalCanvas');
+            if (categoryCtx) {
+                var categoryColors = [
+                    'rgba(102, 126, 234, 0.8)',
+                    'rgba(240, 147, 251, 0.8)',
+                    'rgba(67, 233, 123, 0.8)',
+                    'rgba(79, 172, 254, 0.8)',
+                    'rgba(255, 159, 64, 0.8)'
+                ];
+                new Chart(categoryCtx.getContext('2d'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: categoryLabels,
+                        datasets: [{
+                            data: categoryValues,
+                            backgroundColor: categoryColors.slice(0, categoryLabels.length),
+                            borderWidth: 2,
+                            borderColor: '#fff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: { position: 'bottom' }
+                        }
+                    }
+                });
+            }
+        }, 300);
+        
+        $(modalElement).on('hidden.bs.modal', function() {
+            $(this).remove();
+        });
+    }
+</script>

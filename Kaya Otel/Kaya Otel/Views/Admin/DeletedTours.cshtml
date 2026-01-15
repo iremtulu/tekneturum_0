@@ -1,0 +1,86 @@
+@model IEnumerable<Kaya_Otel.Models.DeletedTour>
+
+@{
+    ViewData["Title"] = "Silinen Turlar";
+}
+
+<section class="py-5">
+    <div class="container">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle"></i> @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle"></i> @TempData["ErrorMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h4 mb-0">Silinen Turlar</h1>
+            <a asp-action="Tours" class="btn btn-outline-primary">
+                <i class="bi bi-arrow-left"></i> Aktif Turlara Dön
+            </a>
+        </div>
+
+        @if (!Model.Any())
+        {
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> Silinen tur bulunmamaktadır.
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Tur Adı</th>
+                            <th>Kategori</th>
+                            <th>Fiyat</th>
+                            <th>Kapasite</th>
+                            <th>Silinme Tarihi</th>
+                            <th>Silen Admin</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var tour in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <strong>@tour.Name</strong>
+                                    @if (!string.IsNullOrEmpty(tour.ImageUrl))
+                                    {
+                                        <br />
+                                        <img src="@tour.ImageUrl" alt="@tour.Name" class="img-thumbnail mt-2" style="max-width: 80px; max-height: 80px;" />
+                                    }
+                                </td>
+                                <td>@tour.Category</td>
+                                <td>@tour.PricePerPerson.ToString("C0")</td>
+                                <td>@tour.Capacity</td>
+                                <td>
+                                    @tour.DeletedAt.ToString("dd MMM yyyy HH:mm")
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">@(tour.DeletedBy ?? "Bilinmiyor")</span>
+                                </td>
+                                <td class="text-end">
+                                    <a asp-action="RestoreTour" asp-route-id="@tour.Id" class="btn btn-sm btn-outline-success"
+                                       onclick="return confirm('Bu turu geri yüklemek istediğinizden emin misiniz? Tur aktif turlar listesine eklenecektir.');">
+                                        <i class="bi bi-arrow-counterclockwise"></i> Geri Yükle
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</section>
+

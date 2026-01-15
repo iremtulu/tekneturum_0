@@ -21,8 +21,9 @@
                             </div>
                             <div class="col-md-6">
                                 <label asp-for="Guests" class="form-label">Kişi Sayısı</label>
-                                <input asp-for="Guests" class="form-control" type="number" min="1" max="50" />
+                                <input asp-for="Guests" id="guestsInput" class="form-control" type="number" min="1" value="1" required />
                                 <span asp-validation-for="Guests" class="text-danger"></span>
+                                <small id="guestsStatus" class="form-text text-muted">Maksimum: <strong>@tour?.Capacity kişi</strong> (Tur kapasitesi)</small>
                             </div>
                             <div class="col-md-6">
                                 <label asp-for="CustomerName" class="form-label">Ad Soyad</label>
@@ -40,7 +41,15 @@
                                 <span asp-validation-for="Email" class="text-danger"></span>
                             </div>
                             <div class="col-12">
-                                <button type="submit" class="btn btn-primary w-100">Kapora Ödemesine Geç</button>
+                                <div class="alert alert-info mb-3">
+                                    <h6 class="alert-heading"><i class="bi bi-info-circle"></i> Önemli Bilgi</h6>
+                                    <p class="mb-0">
+                                        <strong>Kapora İade Politikası:</strong> Kapora ücreti turdan 1 gün öncesine kadar iade edilir. 
+                                        Ancak tura 1 gün veya daha az zaman kalmışsa kapora ücreti iade edilmeyecektir.
+                                    </p>
+                                </div>
+                                <button type="submit" id="submitButton" class="btn btn-primary w-100">Kapora Ödemesine Geç</button>
+                                <div id="dateAvailabilityAlert" class="alert mt-3" style="display: none;"></div>
                             </div>
                         </form>
                     </div>
@@ -55,10 +64,10 @@
                             <li><strong>Kategori:</strong> @tour?.Category</li>
                             <li><strong>Süre:</strong> @tour?.Duration.TotalHours.ToString("0") saat</li>
                             <li><strong>Kapasite:</strong> @tour?.Capacity kişi</li>
-                            <li><strong>Tur Fiyatı:</strong> @tour?.PricePerPerson.ToString("C0")</li>
+                            <li><strong>Tur Ücreti:</strong> @tour?.PricePerPerson.ToString("C0")</li>
                         </ul>
                         <div class="alert alert-info">
-                            Kapora tutarı toplam ücretin %20'si olarak hesaplanacaktır.
+                            <strong>Kapora:</strong> Tur ücretinin %20'si olarak hesaplanacaktır. (Kişi sayısına göre değişmez)
                         </div>
                     </div>
                 </div>
@@ -82,54 +91,212 @@
             .then(data => {
                 paidDates = data.paidDates || [];
                 unpaidDates = data.unpaidDates || [];
-                updateDateInputStyle();
+                // Eğer bir tarih seçilmişse güncelle
+                if (dateInput.value) {
+                    updateDateInputStyle();
+                }
             })
             .catch(error => console.error('Tarih durumları yüklenemedi:', error));
 
+        const submitButton = document.getElementById('submitButton');
+        const dateAvailabilityAlert = document.getElementById('dateAvailabilityAlert');
+        let isDateAvailable = true;
+
         function updateDateInputStyle() {
             const selectedDate = dateInput.value;
-            if (!selectedDate) return;
+            
+            // Tarih seçilmemişse
+            if (!selectedDate) {
+                dateInput.classList.remove('date-paid', 'date-unpaid');
+                dateStatus.textContent = '';
+                dateStatus.className = 'form-text text-muted';
+                dateAvailabilityAlert.style.display = 'none';
+                submitButton.disabled = false;
+                submitButton.classList.remove('btn-secondary');
+                submitButton.classList.add('btn-primary');
+                isDateAvailable = true;
+                dateInput.setCustomValidity('');
+                return;
+            }
 
             dateInput.classList.remove('date-paid', 'date-unpaid');
             dateStatus.textContent = '';
+            dateAvailabilityAlert.style.display = 'none';
 
+            // Müsait olmayan tarih kontrolü
             if (paidDates.includes(selectedDate)) {
                 dateInput.classList.add('date-paid');
-                dateStatus.textContent = '⚠️ Bu tarih için ödeme yapılmış rezervasyon var';
-                dateStatus.className = 'form-text text-danger';
-            } else if (unpaidDates.includes(selectedDate)) {
-                dateInput.classList.add('date-unpaid');
-                dateStatus.textContent = '✓ Bu tarih için ödeme yapılmamış rezervasyon var';
-                dateStatus.className = 'form-text text-success';
+                dateStatus.textContent = '❌ Müsait Değil - Bu tarih için ödeme yapılmış rezervasyon var';
+                dateStatus.className = 'form-text text-danger fw-bold';
+                dateInput.setCustomValidity('❌ Bu tarih için müsait değil. Lütfen başka bir tarih seçin.');
+                
+                // Uyarı mesajı göster
+                dateAvailabilityAlert.className = 'alert alert-danger mt-3';
+                dateAvailabilityAlert.innerHTML = '<i class="bi bi-exclamation-triangle"></i> <strong>Mevcut rezervasyon olduğundan dolayı bu tarihe rezervasyon yapamazsınız.</strong> Lütfen başka bir tarih seçin.';
+                dateAvailabilityAlert.style.display = 'block';
+                
+                // Submit butonunu devre dışı bırak
+                submitButton.disabled = true;
+                submitButton.classList.remove('btn-primary');
+                submitButton.classList.add('btn-secondary');
+                isDateAvailable = false;
             } else {
-                dateStatus.textContent = '';
+                // Müsait tarih
+                dateInput.classList.add('date-unpaid');
+                dateStatus.textContent = '✓ Müsait - Bu tarih için rezervasyon yapılabilir';
+                dateStatus.className = 'form-text text-success fw-bold';
+                dateInput.setCustomValidity('');
+                
+                // Başarı mesajı göster
+                dateAvailabilityAlert.className = 'alert alert-success mt-3';
+                dateAvailabilityAlert.innerHTML = '<i class="bi bi-check-circle"></i> <strong>Bu tarih müsait!</strong> Rezervasyon yapabilirsiniz.';
+                dateAvailabilityAlert.style.display = 'block';
+                
+                // Submit butonunu aktif et
+                submitButton.disabled = false;
+                submitButton.classList.remove('btn-secondary');
+                submitButton.classList.add('btn-primary');
+                isDateAvailable = true;
             }
         }
 
-        dateInput.addEventListener('change', updateDateInputStyle);
-        dateInput.addEventListener('input', updateDateInputStyle);
+        // Tarih seçildiğinde anında kontrol et
+        dateInput.addEventListener('change', function() {
+            const selectedDate = this.value;
+            if (selectedDate) {
+                // Tarih durumlarını tekrar yükle (güncel olsun)
+                fetch('@Url.Action("GetBookingDates", "Booking")')
+                    .then(response => response.json())
+                    .then(data => {
+                        paidDates = data.paidDates || [];
+                        unpaidDates = data.unpaidDates || [];
+                        updateDateInputStyle();
+                    })
+                    .catch(error => console.error('Tarih durumları yüklenemedi:', error));
+            } else {
+                updateDateInputStyle();
+            }
+        });
+        
+        dateInput.addEventListener('input', function() {
+            updateDateInputStyle();
+        });
+        
+        // Kişi sayısı kontrolü
+        const guestsInput = document.getElementById('guestsInput');
+        const guestsStatus = document.getElementById('guestsStatus');
+        const maxCapacity = @(tour?.Capacity ?? 1);
+        
+        guestsInput.addEventListener('input', function() {
+            const guests = parseInt(this.value) || 0;
+            
+            if (guests > maxCapacity) {
+                this.setCustomValidity(`Bu tur için maksimum ${maxCapacity} kişi rezervasyon yapılabilir.`);
+                guestsStatus.textContent = `❌ Maksimum: ${maxCapacity} kişi (Tur kapasitesi) - ${maxCapacity}'den fazla giremezsiniz`;
+                guestsStatus.className = 'form-text text-danger fw-bold';
+            } else if (guests < 1) {
+                this.setCustomValidity('Kişi sayısı en az 1 olmalıdır.');
+                guestsStatus.textContent = '❌ Kişi sayısı en az 1 olmalıdır.';
+                guestsStatus.className = 'form-text text-danger fw-bold';
+            } else {
+                this.setCustomValidity('');
+                if (guests === maxCapacity) {
+                    guestsStatus.textContent = `✓ Maksimum kapasite: ${maxCapacity} kişi (Tur kapasitesi)`;
+                } else {
+                    guestsStatus.textContent = `✓ Maksimum: ${maxCapacity} kişi (Tur kapasitesi)`;
+                }
+                guestsStatus.className = 'form-text text-success fw-bold';
+            }
+        });
+        
+        guestsInput.addEventListener('change', function() {
+            const guests = parseInt(this.value) || 0;
+            if (guests > maxCapacity) {
+                this.value = maxCapacity;
+                alert(`❌ Bu tur için maksimum ${maxCapacity} kişi rezervasyon yapılabilir. Değer ${maxCapacity} olarak ayarlandı.`);
+            } else if (guests < 1) {
+                this.value = 1;
+                alert('❌ Kişi sayısı en az 1 olmalıdır. Değer 1 olarak ayarlandı.');
+            }
+        });
+
+        
+        // Form gönderimini kontrol et - müsait olmayan günler ve kapasite için engelle
+        const form = document.querySelector('form');
+        form.addEventListener('submit', function(e) {
+            const selectedDate = dateInput.value;
+            const guests = parseInt(guestsInput.value) || 0;
+            
+            // Tarih seçilmemişse
+            if (!selectedDate) {
+                e.preventDefault();
+                alert('Lütfen bir tarih seçin.');
+                dateInput.focus();
+                return false;
+            }
+            
+            // Tarih kontrolü - müsait olmayan tarih
+            if (paidDates.includes(selectedDate) || !isDateAvailable) {
+                e.preventDefault();
+                alert('❌ Mevcut rezervasyon olduğundan dolayı bu tarihe rezervasyon yapamazsınız. Lütfen başka bir tarih seçin.');
+                dateInput.focus();
+                return false;
+            }
+            
+            // Kapasite kontrolü
+            if (guests > maxCapacity) {
+                e.preventDefault();
+                alert(`❌ Bu tur için maksimum ${maxCapacity} kişi rezervasyon yapılabilir.`);
+                guestsInput.focus();
+                guestsInput.value = maxCapacity;
+                return false;
+            }
+            
+            if (guests < 1) {
+                e.preventDefault();
+                alert('❌ Kişi sayısı en az 1 olmalıdır.');
+                guestsInput.focus();
+                return false;
+            }
+        });
     });
 </script>
 
 <style>
     input.date-paid {
-        border: 2px solid #dc3545 !important;
-        background-color: #fff5f5;
+        border: 3px solid #dc3545 !important;
+        background-color: #fff5f5 !important;
+        color: #dc3545 !important;
+        font-weight: bold;
     }
 
     input.date-paid:focus {
         border-color: #dc3545 !important;
-        box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+        box-shadow: 0 0 0 0.3rem rgba(220, 53, 69, 0.4) !important;
+        background-color: #fff5f5 !important;
     }
 
     input.date-unpaid {
-        border: 2px solid #28a745 !important;
-        background-color: #f0fff4;
+        border: 3px solid #28a745 !important;
+        background-color: #f0fff4 !important;
+        color: #28a745 !important;
+        font-weight: bold;
     }
 
     input.date-unpaid:focus {
         border-color: #28a745 !important;
-        box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+        box-shadow: 0 0 0 0.3rem rgba(40, 167, 69, 0.4) !important;
+        background-color: #f0fff4 !important;
+    }
+    
+    /* Tarih input'u için genel stil */
+    #tourDateInput {
+        transition: all 0.3s ease;
+    }
+    
+    #dateStatus {
+        margin-top: 5px;
+        font-size: 0.9rem;
     }
 </style>
 

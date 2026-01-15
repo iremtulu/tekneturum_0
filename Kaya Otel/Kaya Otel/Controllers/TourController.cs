@@ -28,6 +28,30 @@ namespace Kaya_Otel.Controllers
             if (tour == null) return NotFound();
             return View(tour);
         }
+
+        [HttpGet]
+        public async Task<IActionResult> GetTourDetails(int id)
+        {
+            var tour = await _context.Tours.FirstOrDefaultAsync(t => t.Id == id);
+            if (tour == null) return Json(new { success = false, message = "Tur bulunamadı" });
+            
+            return Json(new
+            {
+                success = true,
+                tour = new
+                {
+                    id = tour.Id,
+                    name = tour.Name,
+                    category = tour.Category,
+                    description = tour.Description,
+                    pricePerPerson = tour.PricePerPerson,
+                    capacity = tour.Capacity,
+                    duration = tour.Duration.TotalHours,
+                    imageUrl = tour.ImageUrl,
+                    isActive = tour.IsActive
+                }
+            });
+        }
     }
 }
 

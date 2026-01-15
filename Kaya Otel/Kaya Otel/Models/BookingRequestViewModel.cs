@@ -12,7 +12,7 @@ namespace Kaya_Otel.Models
         public DateTime TourDate { get; set; }
 
         [Required]
-        [Range(1, 50)]
+        [Range(1, int.MaxValue, ErrorMessage = "Kişi sayısı en az 1 olmalıdır.")]
         public int Guests { get; set; }
 
         [Required]

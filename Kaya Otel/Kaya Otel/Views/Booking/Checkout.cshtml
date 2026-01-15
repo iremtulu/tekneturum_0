@@ -23,30 +23,55 @@
                             <span>Kişi Sayısı</span>
                             <strong>@Model.Guests</strong>
                         </div>
-                        @{
-                            var tourPrice = ViewBag.TourPrice as decimal? ?? Model.TotalAmount / Model.Guests;
-                        }
                         <div class="mb-3 d-flex justify-content-between">
-                            <span>Tur Fiyatı</span>
-                            <strong>@tourPrice.ToString("C0")</strong>
+                            <span>Toplam Ücret</span>
+                            <strong>@Model.TotalAmount.ToString("C0")</strong>
                         </div>
-                        <div class="alert alert-primary">
-                            Kapora tutarı tur fiyatının %20'sidir.
-                            <div class="d-flex justify-content-between mt-2">
-                                <span>Ödenecek Kapora</span>
-                                <strong>@Model.DepositAmount.ToString("C0")</strong>
+                        <div class="mb-3 d-flex justify-content-between">
+                            <span>Ödenecek Kapora</span>
+                            <strong>@Model.DepositAmount.ToString("C0")</strong>
+                        </div>
+                        <hr class="my-4">
+                        <h5 class="mb-3">Kart Bilgileri</h5>
+                        @if (TempData["PaymentError"] != null)
+                        {
+                            <div class="alert alert-danger">
+                                @TempData["PaymentError"]
                             </div>
-                        </div>
-                        <form asp-action="CompletePayment" method="post" class="d-grid gap-2">
-                            <input type="hidden" name="bookingId" value="@Model.Id" />
-                            <select name="provider" class="form-select">
-                                <option value="iyzico">iyzico</option>
-                                <option value="stripe">Stripe</option>
-                            </select>
-                            <button class="btn btn-success btn-lg" type="submit">Ödemeyi Tamamla</button>
+                        }
+                        <form asp-action="CompletePayment" method="post" class="d-grid gap-3">
+                            <input type="hidden" name="provider" value="iyzico" />
+                            
+                            <div>
+                                <label class="form-label">Kart Sahibi Adı</label>
+                                <input type="text" name="cardHolderName" class="form-control" value="@Model.CustomerName" required />
+                            </div>
+                            
+                            <div>
+                                <label class="form-label">Kart Numarası</label>
+                                <input type="text" name="cardNumber" class="form-control" placeholder="5528790000000008" maxlength="19" required />
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label class="form-label">Son Kullanma Tarihi (Ay)</label>
+                                    <input type="text" name="expireMonth" class="form-control" placeholder="12" maxlength="2" required />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Son Kullanma Tarihi (Yıl)</label>
+                                    <input type="text" name="expireYear" class="form-control" placeholder="2030" maxlength="4" required />
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="form-label">CVV</label>
+                                <input type="text" name="cvc" class="form-control" placeholder="123" maxlength="3" required />
+                            </div>
+                            
+                            <button class="btn btn-success btn-lg mt-3" type="submit">Kapora Ödemesini Tamamla</button>
                         </form>
                         <p class="text-muted small mt-3">
-                            * Test ortamında gerçek ödeme alınmamaktadır. Ödeme sağlayıcı entegrasyonu için kendi API anahtarlarınızı girmeniz yeterlidir.
+                            * Test ortamında sandbox kart bilgileri kullanılmaktadır.
                         </p>
                     </div>
                 </div>

@@ -1,0 +1,205 @@
+@model IEnumerable<Kaya_Otel.Models.Booking>
+
+@{
+    ViewData["Title"] = "İptal Talepleri";
+}
+
+<section class="py-5">
+    <div class="container">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle"></i> @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle"></i> @TempData["ErrorMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h4 mb-0">İptal Talepleri</h1>
+            <a asp-action="Bookings" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Rezervasyonlara Dön
+            </a>
+        </div>
+        @if (!Model.Any())
+        {
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> Bekleyen iptal talebi bulunmamaktadır.
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-striped align-middle">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Tur</th>
+                            <th>Tarih</th>
+                            <th>Müşteri</th>
+                            <th>Kişi</th>
+                            <th>İptal Nedeni</th>
+                            <th>Talep Tarihi</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var booking in Model)
+                        {
+                            <tr>
+                                <td>@booking.Id</td>
+                                <td><strong>@booking.TourName</strong></td>
+                                <td>@booking.TourDate.ToString("dd MMM yyyy")</td>
+                                <td>@booking.CustomerName</td>
+                                <td>@booking.Guests</td>
+                                <td>
+                                    <small class="text-muted">@(booking.CancellationRequestReason ?? "Neden belirtilmemiş")</small>
+                                </td>
+                                <td>
+                                    @if (booking.CancellationRequestedAt.HasValue)
+                                    {
+                                        @booking.CancellationRequestedAt.Value.ToString("dd MMM yyyy HH:mm")
+                                    }
+                                </td>
+                                <td class="text-end">
+                                    <button type="button" class="btn btn-sm btn-outline-primary" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#bookingModal"
+                                            onclick="loadBookingDetails(@booking.Id)">
+                                        <i class="bi bi-eye"></i> Detay
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-success" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#approveModal"
+                                            data-booking-id="@booking.Id"
+                                            data-booking-name="@booking.TourName">
+                                        <i class="bi bi-check-circle"></i> Onayla
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-danger" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#rejectModal"
+                                            data-booking-id="@booking.Id">
+                                        <i class="bi bi-x-circle"></i> Reddet
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</section>
+
+<!-- Rezervasyon Detay Modal -->
+<div class="modal fade" id="bookingModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div id="bookingDetailsContent">
+                <!-- İçerik AJAX ile yüklenecek -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Onayla Modal -->
+<div class="modal fade" id="approveModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">İptal Talebini Onayla</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="approveForm" method="post">
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i> Bu iptal talebini onaylamak istediğinizden emin misiniz?
+                        <br /><strong id="approveBookingName"></strong> turu için rezervasyon iptal edilecektir.
+                    </div>
+                    <div class="mb-3">
+                        <label for="adminReason" class="form-label">Admin Notu (Opsiyonel)</label>
+                        <textarea id="adminReason" name="adminReason" class="form-control" rows="3" placeholder="İsteğe bağlı not ekleyebilirsiniz..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-circle"></i> Onayla
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Reddet Modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">İptal Talebini Reddet</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="rejectForm" method="post">
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i> Bu iptal talebini reddetmek istediğinizden emin misiniz?
+                    </div>
+                    <div class="mb-3">
+                        <label for="rejectReason" class="form-label">Reddetme Nedeni (Opsiyonel)</label>
+                        <textarea id="rejectReason" name="reason" class="form-control" rows="3" placeholder="Müşteriye gösterilecek reddetme nedeni..."></textarea>
+                        <small class="text-muted">Bu neden müşteriye bildirim olarak gönderilecektir.</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-x-circle"></i> Reddet
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function loadBookingDetails(bookingId) {
+            $.get('@Url.Action("BookingDetails", "Admin")', { id: bookingId }, function(data) {
+                $('#bookingDetailsContent').html(data);
+            });
+        }
+        
+        // Onayla modal için
+        var approveModal = document.getElementById('approveModal');
+        if (approveModal) {
+            approveModal.addEventListener('show.bs.modal', function (event) {
+                var button = event.relatedTarget;
+                var bookingId = button.getAttribute('data-booking-id');
+                var bookingName = button.getAttribute('data-booking-name');
+                var form = document.getElementById('approveForm');
+                form.action = '@Url.Action("ApproveCancellation", "Admin")?id=' + bookingId;
+                document.getElementById('approveBookingName').textContent = bookingName;
+                document.getElementById('adminReason').value = '';
+            });
+        }
+        
+        // Reddet modal için
+        var rejectModal = document.getElementById('rejectModal');
+        if (rejectModal) {
+            rejectModal.addEventListener('show.bs.modal', function (event) {
+                var button = event.relatedTarget;
+                var bookingId = button.getAttribute('data-booking-id');
+                var form = document.getElementById('rejectForm');
+                form.action = '@Url.Action("RejectCancellation", "Admin")?id=' + bookingId;
+                document.getElementById('rejectReason').value = '';
+            });
+        }
+    </script>
+}
+

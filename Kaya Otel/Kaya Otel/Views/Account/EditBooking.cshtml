@@ -1,0 +1,175 @@
+@model Kaya_Otel.Models.Booking
+
+@{
+    ViewData["Title"] = "Rezervasyon Düzenle";
+}
+
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="bi bi-check-circle"></i> @TempData["SuccessMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="bi bi-exclamation-triangle"></i> @TempData["ErrorMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+                @if (TempData["InfoMessage"] != null)
+                {
+                    <div class="alert alert-info alert-dismissible fade show" role="alert">
+                        <i class="bi bi-info-circle"></i> @TempData["InfoMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0"><i class="bi bi-pencil-square"></i> Rezervasyon Düzenle</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-4">
+                            <h5 class="text-primary">@Model.TourName</h5>
+                            <p class="text-muted mb-0">Mevcut Rezervasyon Bilgileri</p>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <strong>Mevcut Tur Tarihi:</strong>
+                                <p class="mb-0">@Model.TourDate.ToString("dd MMMM yyyy dddd", new System.Globalization.CultureInfo("tr-TR"))</p>
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Mevcut Kişi Sayısı:</strong>
+                                <p class="mb-0">@Model.Guests kişi</p>
+                            </div>
+                        </div>
+
+                        @if (Model.UpdateRequested && !string.IsNullOrEmpty(Model.AdminUpdateResponse))
+                        {
+                            <div class="alert alert-info">
+                                <h6><i class="bi bi-info-circle"></i> Admin Yanıtı:</h6>
+                                <p class="mb-0">@Model.AdminUpdateResponse</p>
+                            </div>
+                        }
+
+                        <hr />
+
+                        <form asp-action="RequestUpdate" method="post">
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            
+                            <div class="mb-3">
+                                <label for="requestedTourDate" class="form-label">Yeni Tur Tarihi <span class="text-danger">*</span></label>
+                                <input type="date" id="requestedTourDate" name="requestedTourDate" 
+                                       class="form-control" 
+                                       value="@(Model.RequestedTourDate?.ToString("yyyy-MM-dd") ?? Model.TourDate.ToString("yyyy-MM-dd"))" 
+                                       min="@DateTime.Today.ToString("yyyy-MM-dd")" 
+                                       required />
+                                <span id="dateStatus" class="form-text text-muted"></span>
+                                <small class="text-muted">Lütfen yeni tur tarihini seçin.</small>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="requestedGuests" class="form-label">Yeni Kişi Sayısı <span class="text-danger">*</span></label>
+                                <input type="number" id="requestedGuests" name="requestedGuests" 
+                                       class="form-control" 
+                                       value="@(Model.RequestedGuests ?? Model.Guests)" 
+                                       min="1" 
+                                       max="@(ViewBag.TourCapacity ?? 100)"
+                                       required />
+                                <small class="text-muted">
+                                    Lütfen yeni kişi sayısını girin. 
+                                    @if (ViewBag.TourCapacity != null)
+                                    {
+                                        <span class="text-info">Bu tur için maksimum kişi sayısı: <strong>@ViewBag.TourCapacity</strong></span>
+                                    }
+                                </small>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="reason" class="form-label">Güncelleme Nedeni <span class="text-danger">*</span></label>
+                                <textarea id="reason" name="reason" class="form-control" rows="4" required placeholder="Güncelleme nedeninizi açıklayın...">@Model.UpdateRequestReason</textarea>
+                                <small class="text-muted">Lütfen güncelleme nedeninizi detaylı olarak belirtin.</small>
+                            </div>
+
+                            <div class="alert alert-warning">
+                                <i class="bi bi-exclamation-triangle"></i> <strong>Önemli:</strong> Güncelleme talebiniz admin tarafından onaylandıktan sonra rezervasyonunuz güncellenecektir.
+                            </div>
+
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-send"></i> Talep Gönder
+                                </button>
+                                <a asp-action="MyBookings" class="btn btn-secondary">
+                                    <i class="bi bi-arrow-left"></i> Geri Dön
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const dateInput = document.getElementById('requestedTourDate');
+            const dateStatus = document.getElementById('dateStatus');
+            const bookingId = @Model.Id;
+
+            function checkDateAvailability(selectedDate) {
+                if (!selectedDate) {
+                    dateStatus.textContent = '';
+                    dateStatus.className = 'form-text text-muted';
+                    return;
+                }
+
+                // Tarih formatını kontrol et
+                const dateParts = selectedDate.split('-');
+                if (dateParts.length !== 3) {
+                    return;
+                }
+
+                fetch('@Url.Action("CheckDateAvailability", "Account")?bookingId=' + bookingId + '&date=' + selectedDate)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.available) {
+                            dateStatus.textContent = '✓ ' + data.message;
+                            dateStatus.className = 'form-text text-success fw-bold';
+                            dateInput.classList.remove('is-invalid');
+                            dateInput.classList.add('is-valid');
+                        } else {
+                            dateStatus.textContent = '❌ ' + data.message;
+                            dateStatus.className = 'form-text text-danger fw-bold';
+                            dateInput.classList.remove('is-valid');
+                            dateInput.classList.add('is-invalid');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Tarih kontrolü hatası:', error);
+                        dateStatus.textContent = '';
+                        dateStatus.className = 'form-text text-muted';
+                    });
+            }
+
+            // Tarih seçildiğinde kontrol et
+            dateInput.addEventListener('change', function() {
+                checkDateAvailability(this.value);
+            });
+
+            // Sayfa yüklendiğinde eğer bir tarih varsa kontrol et
+            if (dateInput.value) {
+                checkDateAvailability(dateInput.value);
+            }
+        });
+    </script>
+}
+

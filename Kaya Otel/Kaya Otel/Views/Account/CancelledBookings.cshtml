@@ -1,0 +1,109 @@
+@model IEnumerable<Kaya_Otel.Models.CancelledBooking>
+
+@{
+    ViewData["Title"] = "İptal Edilen Rezervasyonlar";
+}
+
+<section class="py-5">
+    <div class="container">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle"></i> @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle"></i> @TempData["ErrorMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+        
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h4 mb-0">İptal Edilen Rezervasyonlar</h1>
+            <a asp-action="MyBookings" class="btn btn-outline-primary">
+                <i class="bi bi-arrow-left"></i> Rezervasyonlarım
+            </a>
+        </div>
+        
+        @if (!Model.Any())
+        {
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> İptal edilen rezervasyonunuz bulunmamaktadır.
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-striped align-middle">
+                    <thead>
+                        <tr>
+                            <th>Tur Adı</th>
+                            <th>Tarih</th>
+                            <th>Kişi Sayısı</th>
+                            <th>Tur Fiyatı</th>
+                            <th>Kapora</th>
+                            <th>İptal Tarihi</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var cancelledBooking in Model)
+                        {
+                            <tr>
+                                <td><strong>@cancelledBooking.TourName</strong></td>
+                                <td>@cancelledBooking.TourDate.ToString("dd MMM yyyy")</td>
+                                <td>@cancelledBooking.Guests kişi</td>
+                                <td>@cancelledBooking.TotalAmount.ToString("C0")</td>
+                                <td>@cancelledBooking.DepositAmount.ToString("C0")</td>
+                                <td>@cancelledBooking.CancelledAt.ToString("dd MMM yyyy HH:mm")</td>
+                                <td class="text-end">
+                                    <div class="d-flex flex-column gap-2 align-items-end">
+                                        <div class="d-flex gap-2 flex-wrap">
+                                            <span class="badge bg-danger text-white">
+                                                <i class="bi bi-x-circle"></i> Tur İptal Edildi
+                                            </span>
+                                            <button type="button" class="btn btn-sm btn-outline-primary" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#bookingModal"
+                                                    onclick="loadCancelledBookingDetails(@cancelledBooking.OriginalBookingId)">
+                                                <i class="bi bi-eye"></i> Detay
+                                            </button>
+                                        </div>
+                                        <div class="text-muted small">
+                                            <strong>İade Tutar:</strong> <span class="text-success fw-bold">@cancelledBooking.DepositAmount.ToString("C0")</span>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</section>
+
+<!-- Rezervasyon Detay Modal -->
+<div class="modal fade" id="bookingModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div id="bookingDetailsContent">
+                <!-- İçerik AJAX ile yüklenecek -->
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function loadCancelledBookingDetails(bookingId) {
+            $.get('@Url.Action("BookingDetails", "Account")', { id: bookingId, isCancelled: true }, function(data) {
+                $('#bookingDetailsContent').html(data);
+            });
+        }
+    </script>
+}
+

@@ -26,6 +26,8 @@ namespace Kaya_Otel.Controllers
 
     public async Task<IActionResult> Index()
     {
+      // Ana sayfa her zaman gösterilsin (giriş yapmış olsa bile)
+      // Admin veya kullanıcı giriş yapmışsa normal ana sayfayı göster, panel'e yönlendirme yapma
       var tours = await _context.Tours.Where(t => t.IsActive).ToListAsync();
       var posts = await _instagramService.GetLatestPostsAsync();
       ViewBag.HeroTittle = "Günübirlik Tekne Turları";
@@ -60,6 +62,21 @@ namespace Kaya_Otel.Controllers
     public IActionResult Error()
     {
       return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+    }
+
+    [HttpGet]
+    public IActionResult CheckSession()
+    {
+      var isAdmin = HttpContext.Session.GetString("AdminGirisi") == "true";
+      var isUser = HttpContext.Session.GetString("UserGirisi") == "true";
+      
+      return Json(new
+      {
+        isAdmin = isAdmin,
+        isUser = isUser,
+        adminName = isAdmin ? HttpContext.Session.GetString("AdminUserName") : null,
+        userName = isUser ? HttpContext.Session.GetString("UserName") : null
+      });
     }
   }
 }

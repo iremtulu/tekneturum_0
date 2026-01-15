@@ -5,10 +5,11 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Kaya_Otel</title>
+    <title>@ViewData["Title"] - Kekova Tour</title>
 
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body>
@@ -16,7 +17,7 @@
         <nav id="navbar" class="navbar navbar-expand-sm navbar-light bg-white shadow-sm">
             <div class="container-fluid">
                 <a class="navbar-brand me-4" asp-controller="Home" asp-action="Index">
-                    <img src="~/images/logotekne.jpg" alt="Kaya Tekne" style="height:40px;">
+                    <img src="~/images/logotekne.jpg" alt="Kekova Tour" style="height:40px;">
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
                     <span class="navbar-toggler-icon"></span>
@@ -33,10 +34,49 @@
                             <a class="nav-link" asp-controller="Home" asp-action="Contact">İletişim</a>
                         </li>
                     </ul>
-                    <div class="d-flex gap-2">
-                        <a class="btn btn-outline-primary" asp-controller="Admin" asp-action="AdminLogin">Admin</a>
-                        <a class="btn btn-outline-secondary" asp-controller="Account" asp-action="Login">Kullanıcı</a>
-                        <a class="btn btn-primary" asp-controller="Tour" asp-action="Index">Rezervasyon</a>
+                    <div class="d-flex gap-2 align-items-center" id="authButtonsContainer">
+                        @* Admin veya Kullanıcı giriş yapmışsa isim ve çıkış butonu göster *@
+                        @if (Context.Session.GetString("AdminGirisi") == "true")
+                        {
+                            <div class="dropdown" id="adminDropdown">
+                                <button class="btn btn-outline-primary dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown">
+                                    <i class="bi bi-person-circle"></i> @(Context.Session.GetString("AdminUserName") ?? "Admin")
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" asp-controller="Admin" asp-action="Dashboard">
+                                        <i class="bi bi-speedometer2"></i> Admin Paneli
+                                    </a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item text-danger" asp-controller="Admin" asp-action="Logout">
+                                        <i class="bi bi-box-arrow-right"></i> Çıkış Yap
+                                    </a></li>
+                                </ul>
+                            </div>
+                        }
+                        else if (Context.Session.GetString("UserGirisi") == "true")
+                        {
+                            <div class="dropdown" id="userDropdown">
+                                <button class="btn btn-outline-success dropdown-toggle" type="button" id="userDropdownBtn" data-bs-toggle="dropdown">
+                                    <i class="bi bi-person-circle"></i> @(Context.Session.GetString("UserName") ?? "Kullanıcı")
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" asp-controller="Account" asp-action="MyBookings">
+                                        <i class="bi bi-calendar-check"></i> Rezervasyonlarım
+                                    </a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item text-danger" asp-controller="Account" asp-action="Logout">
+                                        <i class="bi bi-box-arrow-right"></i> Çıkış Yap
+                                    </a></li>
+                                </ul>
+                            </div>
+                        }
+                        else
+                        {
+                            @* Giriş yapmamış kullanıcılar için *@
+                            <a class="btn btn-outline-primary" asp-controller="Admin" asp-action="AdminLogin" id="adminLoginBtn">Admin</a>
+                            <a class="btn btn-outline-secondary" asp-controller="Account" asp-action="Login" id="userLoginBtn">Kullanıcı Girişi</a>
+                            <a class="btn btn-primary" asp-controller="Tour" asp-action="Index">Rezervasyon</a>
+                        }
                     </div>
                 </div>
             </div>
@@ -55,8 +95,85 @@
 
     <!-- JS -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        // Session durumunu kontrol et ve UI'ı güncelle
+        function checkSessionStatus() {
+            fetch('@Url.Action("CheckSession", "Home")', {
+                method: 'GET',
+                cache: 'no-store',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                const container = document.getElementById('authButtonsContainer');
+                if (!container) return;
+                
+                // Mevcut içeriği temizle
+                container.innerHTML = '';
+                
+                if (data.isAdmin) {
+                    // Admin girişi yapılmış
+                    container.innerHTML = `
+                        <div class="dropdown" id="adminDropdown">
+                            <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-person-circle"></i> ${data.adminName || 'Admin'}
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="@Url.Action("Dashboard", "Admin")">
+                                    <i class="bi bi-speedometer2"></i> Admin Paneli
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="@Url.Action("Logout", "Admin")">
+                                    <i class="bi bi-box-arrow-right"></i> Çıkış Yap
+                                </a></li>
+                            </ul>
+                        </div>
+                    `;
+                } else if (data.isUser) {
+                    // Kullanıcı girişi yapılmış
+                    container.innerHTML = `
+                        <div class="dropdown" id="userDropdown">
+                            <button class="btn btn-outline-success dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-person-circle"></i> ${data.userName || 'Kullanıcı'}
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="@Url.Action("MyBookings", "Account")">
+                                    <i class="bi bi-calendar-check"></i> Rezervasyonlarım
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="@Url.Action("Logout", "Account")">
+                                    <i class="bi bi-box-arrow-right"></i> Çıkış Yap
+                                </a></li>
+                            </ul>
+                        </div>
+                    `;
+                } else {
+                    // Giriş yapılmamış
+                    container.innerHTML = `
+                        <a class="btn btn-outline-primary" href="@Url.Action("AdminLogin", "Admin")">Admin</a>
+                        <a class="btn btn-outline-secondary" href="@Url.Action("Login", "Account")">Kullanıcı Girişi</a>
+                        <a class="btn btn-primary" href="@Url.Action("Index", "Tour")">Rezervasyon</a>
+                    `;
+                }
+            })
+            .catch(error => {
+                console.error('Session kontrolü hatası:', error);
+            });
+        }
+        
+        // Sayfa yüklendiğinde ve cache'den yüklendiğinde kontrol et
+        window.addEventListener('load', checkSessionStatus);
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted) {
+                // Cache'den yüklendiğinde session durumunu kontrol et
+                checkSessionStatus();
+            }
+        });
+    </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

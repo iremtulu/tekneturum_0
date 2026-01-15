@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Admin Paneli</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .admin-sidebar {
+            min-height: 100vh;
+            background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 250px;
+            z-index: 1000;
+        }
+        .admin-sidebar .sidebar-header {
+            padding: 20px;
+            background-color: rgba(0,0,0,0.2);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .admin-sidebar .sidebar-header h4 {
+            margin: 0;
+            color: white;
+            font-weight: 600;
+        }
+        .admin-sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            padding: 12px 20px;
+            border-left: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        .admin-sidebar .nav-link:hover,
+        .admin-sidebar .nav-link.active {
+            background-color: rgba(255,255,255,0.1);
+            border-left-color: #3498db;
+            color: white;
+        }
+        .admin-sidebar .nav-link i {
+            margin-right: 10px;
+            width: 20px;
+        }
+        .admin-sidebar nav {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 80px);
+        }
+        .admin-sidebar .nav-link[style*="margin-top: auto"] {
+            margin-top: auto !important;
+        }
+        .admin-content {
+            margin-left: 250px;
+            padding: 30px;
+            min-height: 100vh;
+            width: calc(100% - 250px);
+            background-color: #f8f9fa;
+        }
+        .admin-content .container-fluid {
+            width: 100%;
+            max-width: 100%;
+            padding: 0;
+        }
+        .admin-header {
+            background: white;
+            padding: 15px 30px;
+            margin: -20px -20px 20px -20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .admin-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: #2c3e50;
+        }
+        .logout-btn {
+            background-color: #e74c3c;
+            border: none;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .logout-btn:hover {
+            background-color: #c0392b;
+            color: white;
+        }
+        @@media (max-width: 768px) {
+            .admin-sidebar {
+                width: 100%;
+                position: relative;
+                min-height: auto;
+            }
+            .admin-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-sidebar">
+        <div class="sidebar-header">
+            <h4><i class="bi bi-shield-check"></i> Admin Paneli</h4>
+        </div>
+        <nav class="nav flex-column mt-3">
+            <a class="nav-link" asp-controller="Admin" asp-action="Dashboard">
+                <i class="bi bi-speedometer2"></i> Dashboard
+            </a>
+            <a class="nav-link" asp-controller="Admin" asp-action="Tours">
+                <i class="bi bi-map"></i> Tur Yönetimi
+            </a>
+            <a class="nav-link" asp-controller="Admin" asp-action="DeletedTours">
+                <i class="bi bi-trash"></i> Silinen Turlar
+            </a>
+            <a class="nav-link" asp-controller="Admin" asp-action="Bookings">
+                <i class="bi bi-calendar-check"></i> Rezervasyonlar
+            </a>
+            <a class="nav-link" asp-controller="Admin" asp-action="CancellationRequests">
+                <i class="bi bi-hourglass-split"></i> İptal Talepleri
+            </a>
+            <a class="nav-link" asp-controller="Admin" asp-action="UpdateRequests">
+                <i class="bi bi-pencil-square"></i> Güncelleme Talepleri
+            </a>
+            <a class="nav-link" asp-controller="Admin" asp-action="CancelledBookings">
+                <i class="bi bi-x-circle"></i> İptal Edilen Rezervasyonlar
+            </a>
+            <hr style="border-color: rgba(255,255,255,0.2); margin: 10px 20px;">
+            <a class="nav-link" asp-controller="Home" asp-action="Index" style="margin-top: auto;">
+                <i class="bi bi-globe"></i> Web Sitesi Ana Sayfa
+            </a>
+        </nav>
+    </div>
+
+    <div class="admin-content">
+                <div class="admin-header">
+                    <h2>@ViewData["Title"]</h2>
+                    <div class="d-flex gap-2 align-items-center">
+                        <!-- Bildirim Butonu -->
+                        <div class="dropdown">
+                            <button class="btn btn-outline-primary position-relative" type="button" id="notificationDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-bell"></i>
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="notificationBadge" style="display: none;">
+                                    0
+                                </span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" id="notificationList" style="min-width: 450px; max-width: 600px; max-height: 500px; overflow-y: auto;">
+                                <li><h6 class="dropdown-header">Bildirimler</h6></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li id="notificationEmpty" class="px-3 py-2 text-muted text-center">Bildirim bulunmamaktadır.</li>
+                            </ul>
+                        </div>
+                        <div class="dropdown">
+                            <button class="btn btn-outline-primary dropdown-toggle" type="button" id="profileDropdown" data-bs-toggle="dropdown">
+                                <i class="bi bi-person-circle"></i> @(Context.Session.GetString("AdminUserName") ?? "Admin")
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" asp-controller="Admin" asp-action="Profile">
+                                    <i class="bi bi-person"></i> Profil ve Ayarlar
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" asp-controller="Admin" asp-action="Logout">
+                                    <i class="bi bi-box-arrow-right"></i> Çıkış Yap
+                                </a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+        <main>
+            @RenderBody()
+        </main>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        // Aktif sayfayı vurgula
+        $(document).ready(function() {
+            var currentPath = window.location.pathname.toLowerCase();
+            $('.admin-sidebar .nav-link').each(function() {
+                var linkPath = $(this).attr('href')?.toLowerCase();
+                if (linkPath && currentPath.includes(linkPath.replace('/admin/', '').split('/')[0])) {
+                    $(this).addClass('active');
+                }
+            });
+            
+            // Bildirimleri yükle
+            loadNotifications();
+            setInterval(loadNotifications, 30000); // Her 30 saniyede bir kontrol et
+        });
+        
+        function loadNotifications() {
+            $.get('@Url.Action("GetNotifications", "Admin")', function(data) {
+                var notifications = data.notifications || [];
+                var badge = $('#notificationBadge');
+                var list = $('#notificationList');
+                var empty = $('#notificationEmpty');
+                
+                if (notifications.length > 0) {
+                    badge.text(notifications.length).show();
+                    empty.hide();
+                    
+                    // Mevcut bildirimleri temizle (header hariç)
+                    list.find('li:not(.dropdown-header):not(.dropdown-divider)').remove();
+                    
+                    notifications.forEach(function(notif) {
+                        var typeClass = 'text-' + (notif.type === 'danger' ? 'danger' : notif.type === 'warning' ? 'warning' : 'info');
+                        var icon = notif.type === 'danger' ? 'exclamation-triangle' : notif.type === 'warning' ? 'exclamation-circle' : 'info-circle';
+                        // Backend'den gelen tarih Türkiye saati olarak kaydedilmiş (GetTurkeyTime ile)
+                        // JSON serialize edildiğinde UTC olarak gelir, bu yüzden UTC'den Türkiye saatine çevirmeliyiz
+                        var date = new Date(notif.createdAt);
+                        // UTC formatında geliyorsa, Türkiye saatine çevir (UTC+3)
+                        // Ancak tarayıcı zaten yerel saatine göre gösteriyor, bu yüzden sadece Türkiye saat dilimini kullan
+                        var dateStr = date.toLocaleString('tr-TR', { 
+                            day: '2-digit', 
+                            month: 'long', 
+                            year: 'numeric', 
+                            hour: '2-digit', 
+                            minute: '2-digit',
+                            timeZone: 'Europe/Istanbul'
+                        });
+                        
+                        // Tüm bildirimler tıklanabilir olsun - event.stopPropagation() ile dropdown'ı açık tut
+                        var relatedBookingId = notif.relatedBookingId || null;
+                        var phone = notif.phone || '';
+                        var clickAction = 'onclick="event.stopPropagation(); showAdminNotificationDetails(' + notif.id + ', \'' + escapeHtml(notif.title) + '\', \'' + escapeHtml(notif.message) + '\', \'' + escapeHtml(notif.cancellationReason || '') + '\', \'' + dateStr + '\', ' + (relatedBookingId ? relatedBookingId : 'null') + ', \'' + escapeHtml(phone) + '\')"';
+                        
+                        var item = $('<li>').html(
+                            '<div class="dropdown-item-text cursor-pointer" ' + clickAction + '>' +
+                            '<div class="d-flex justify-content-between align-items-start">' +
+                            '<div class="flex-grow-1">' +
+                            '<h6 class="mb-1 ' + typeClass + '"><i class="bi bi-' + icon + '"></i> ' + notif.title + '</h6>' +
+                            '<p class="mb-1 small" style="word-wrap: break-word; white-space: pre-wrap; line-height: 1.5;">' + cleanMessage(notif.message) + '</p>' +
+                            (notif.phone ? '<p class="mb-1 small text-muted"><i class="bi bi-telephone"></i> <strong>Telefon:</strong> ' + escapeHtml(notif.phone) + '</p>' : '') +
+                            (notif.cancellationReason ? '<p class="mb-0 small text-muted" style="word-wrap: break-word; white-space: pre-wrap;"><strong>Neden:</strong> ' + notif.cancellationReason + '</p>' : '') +
+                            '<small class="text-muted">' + dateStr + '</small>' +
+                            '</div>' +
+                            '<button class="btn btn-sm btn-link text-muted" onclick="event.stopPropagation(); markAsRead(' + notif.id + ')"><i class="bi bi-x"></i></button>' +
+                            '</div>' +
+                            '</div>'
+                        );
+                        list.append(item);
+                    });
+                } else {
+                    badge.hide();
+                    empty.show();
+                }
+            });
+        }
+        
+        function markAsRead(id) {
+            $.post('@Url.Action("MarkNotificationAsRead", "Admin")', { id: id }, function(data) {
+                if (data.success) {
+                    loadNotifications();
+                }
+            });
+        }
+        
+        function escapeHtml(text) {
+            if (!text) return '';
+            var map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+        }
+        
+        function cleanMessage(message) {
+            if (!message) return '';
+            // Mesaj içindeki "İptal nedeni: ..." kısmını temizle
+            // Hem "İptal nedeni:" hem de "iptal nedeni:" (küçük harf) versiyonlarını temizle
+            message = message.replace(/\s*[İi]ptal\s+nedeni\s*:\s*[^\.]+\.?/gi, '');
+            // Mesaj içindeki "Red nedeni: ..." kısmını temizle
+            // Hem "Red nedeni:" hem de "red nedeni:" (küçük harf) versiyonlarını temizle
+            message = message.replace(/\s*[Rr]ed\s+nedeni\s*:\s*[^\.]+\.?/gi, '');
+            // Fazla boşlukları temizle
+            message = message.replace(/\s+/g, ' ').trim();
+            return message;
+        }
+        
+        function showAdminNotificationDetails(id, title, message, cancellationReason, dateStr, relatedBookingId, phone) {
+            
+            var modalHtml = '<div class="modal fade notification-widget-modal" id="adminNotificationDetailModal" tabindex="-1" aria-labelledby="adminNotificationDetailModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="true">' +
+                '<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">' +
+                '<div class="modal-content notification-widget-content shadow-lg">' +
+                '<div class="modal-header notification-widget-header">' +
+                '<h5 class="modal-title" id="adminNotificationDetailModalLabel"><i class="bi bi-bell-fill"></i> ' + escapeHtml(title) + '</h5>' +
+                '<button type="button" class="btn-close btn-close-white notification-close-btn" data-bs-dismiss="modal" aria-label="Kapat"></button>' +
+                '</div>' +
+                '<div class="modal-body notification-widget-body">' +
+                '<div class="notification-meta mb-3">' +
+                '<div class="text-muted small"><i class="bi bi-clock"></i> ' + dateStr + '</div>' +
+                (phone ? '<div class="text-muted small mt-2"><i class="bi bi-telephone"></i> <strong>Telefon:</strong> ' + escapeHtml(phone) + '</div>' : '') +
+                '</div>' +
+                '<div class="notification-message-section mb-3">' +
+                '<strong class="d-block mb-2"><i class="bi bi-envelope"></i> Mesaj İçeriği:</strong>' +
+                '<div class="notification-message-box">' + escapeHtml(cleanMessage(message)) + '</div>' +
+                '</div>';
+            
+            // Rezervasyon detayları bölümü (eğer relatedBookingId varsa)
+            if (relatedBookingId) {
+                modalHtml += '<div class="notification-booking-section mb-3">' +
+                    '<hr class="my-3" />' +
+                    '<strong class="d-block mb-2"><i class="bi bi-info-circle"></i> Talep Detayları:</strong>' +
+                    '<div id="adminBookingDetails_' + id + '" class="notification-booking-details">' +
+                    '<div class="text-center py-3">' +
+                    '<div class="spinner-border spinner-border-sm text-primary" role="status">' +
+                    '<span class="visually-hidden">Yükleniyor...</span>' +
+                    '</div>' +
+                    '<span class="ms-2">Rezervasyon bilgileri yükleniyor...</span>' +
+                    '</div>' +
+                    '</div>' +
+                    '</div>';
+            }
+            
+            if (cancellationReason) {
+                modalHtml += '<div class="notification-cancellation-section mb-3">' +
+                    '<hr class="my-3" />' +
+                    '<strong class="d-block mb-2"><i class="bi bi-info-circle"></i> Neden:</strong>' +
+                    '<div class="notification-cancellation-box">' + escapeHtml(cancellationReason) + '</div>' +
+                    '</div>';
+            }
+            
+            modalHtml += '</div>' +
+                '<div class="modal-footer notification-widget-footer border-top">' +
+                '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>' +
+                '<button type="button" class="btn btn-primary" onclick="markAsRead(' + id + '); var modal = bootstrap.Modal.getInstance(document.getElementById(\'adminNotificationDetailModal\')); if(modal) modal.hide();">Okundu Olarak İşaretle</button>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '</div>';
+            
+            // Eski modal varsa kaldır
+            $('.notification-widget-modal').remove();
+            
+            // Yeni modal ekle
+            $('body').append(modalHtml);
+            
+            // Modal'ı göster (Bootstrap 5)
+            var modalElement = document.getElementById('adminNotificationDetailModal');
+            if (modalElement) {
+                var modal = new bootstrap.Modal(modalElement, {
+                    backdrop: true,
+                    keyboard: true,
+                    focus: true
+                });
+                
+                modal.show();
+                
+                // Rezervasyon detaylarını yükle (eğer varsa)
+                if (relatedBookingId) {
+                    loadAdminBookingDetailsForNotification(relatedBookingId, id);
+                }
+                
+                // Modal kapandığında DOM'dan kaldır ama dropdown açık kalsın
+                $(modalElement).on('hidden.bs.modal', function () {
+                    $(this).remove();
+                    // Dropdown'ı tekrar açık tut
+                    var dropdownElement = document.getElementById('notificationDropdown');
+                    if (dropdownElement) {
+                        var dropdown = bootstrap.Dropdown.getInstance(dropdownElement);
+                        if (!dropdown) {
+                            dropdown = new bootstrap.Dropdown(dropdownElement);
+                        }
+                        setTimeout(function() {
+                            dropdown.show();
+                        }, 50);
+                    }
+                });
+            }
+        }
+        
+        function loadAdminBookingDetailsForNotification(bookingId, notificationId) {
+            $.get('@Url.Action("BookingDetails", "Admin")', { id: bookingId }, function(data) {
+                var bookingDetailsHtml = $(data);
+                // Sadece modal-body içeriğini al
+                var bookingContent = bookingDetailsHtml.find('.modal-body').html() || bookingDetailsHtml.html();
+                $('#adminBookingDetails_' + notificationId).html(bookingContent);
+            }).fail(function() {
+                $('#adminBookingDetails_' + notificationId).html('<div class="alert alert-warning">Rezervasyon bilgileri yüklenemedi.</div>');
+            });
+        }
+    </script>
+    
+    <style>
+        .cursor-pointer {
+            cursor: pointer;
+        }
+        .cursor-pointer:hover {
+            background-color: #f8f9fa;
+        }
+        
+        /* Bildirim Widget Modal Stilleri */
+        .notification-widget-modal .modal-dialog {
+            max-width: 700px;
+            margin: 1.75rem auto;
+        }
+        
+        .notification-widget-modal .modal-dialog-centered {
+            display: flex;
+            align-items: center;
+            min-height: calc(100% - 3.5rem);
+        }
+        
+        .notification-widget-content {
+            border: none;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+        }
+        
+        .notification-widget-header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            border-bottom: none;
+            padding: 1.25rem 1.5rem;
+        }
+        
+        .notification-widget-header .modal-title {
+            font-weight: 600;
+            font-size: 1.25rem;
+        }
+        
+        .notification-widget-header .notification-close-btn {
+            opacity: 0.9;
+            filter: brightness(0) invert(1);
+        }
+        
+        .notification-widget-header .notification-close-btn:hover {
+            opacity: 1;
+        }
+        
+        .notification-widget-body {
+            padding: 1.5rem;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        
+        .notification-meta {
+            padding-bottom: 0.75rem;
+        }
+        
+        .notification-message-section {
+            margin-bottom: 1.5rem;
+        }
+        
+        .notification-message-box {
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+            line-height: 1.6;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .notification-booking-section {
+            margin-top: 1rem;
+        }
+        
+        .notification-booking-details {
+            padding: 1rem;
+            background-color: #f0f4ff;
+            border: 1px solid #b8d4f0;
+            border-radius: 8px;
+        }
+        
+        .notification-booking-details .row {
+            margin-bottom: 0.75rem;
+        }
+        
+        .notification-booking-details strong {
+            color: #495057;
+            font-size: 0.9rem;
+        }
+        
+        .notification-booking-details p {
+            margin: 0;
+            color: #212529;
+        }
+        
+        .notification-cancellation-section {
+            margin-top: 1rem;
+        }
+        
+        .notification-cancellation-box {
+            padding: 1rem;
+            background-color: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+            color: #856404;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+            line-height: 1.6;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .notification-widget-footer {
+            padding: 1rem 1.5rem;
+            background-color: #f8f9fa;
+        }
+        
+        /* Modal backdrop - yarı saydam koyu arka plan */
+        .notification-widget-modal .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.65) !important;
+            opacity: 1 !important;
+        }
+        
+        /* Scrollbar stilleri */
+        .notification-widget-body::-webkit-scrollbar,
+        .notification-message-box::-webkit-scrollbar,
+        .notification-cancellation-box::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .notification-widget-body::-webkit-scrollbar-track,
+        .notification-message-box::-webkit-scrollbar-track,
+        .notification-cancellation-box::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        
+        .notification-widget-body::-webkit-scrollbar-thumb,
+        .notification-message-box::-webkit-scrollbar-thumb,
+        .notification-cancellation-box::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        
+        .notification-widget-body::-webkit-scrollbar-thumb:hover,
+        .notification-message-box::-webkit-scrollbar-thumb:hover,
+        .notification-cancellation-box::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
+

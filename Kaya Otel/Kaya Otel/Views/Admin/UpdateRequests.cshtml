@@ -1,0 +1,217 @@
+@model IEnumerable<Kaya_Otel.Models.Booking>
+
+@{
+    ViewData["Title"] = "Güncelleme Talepleri";
+}
+
+<section class="py-5">
+    <div class="container">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle"></i> @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle"></i> @TempData["ErrorMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h4 mb-0">Güncelleme Talepleri</h1>
+            <a asp-action="Bookings" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Rezervasyonlara Dön
+            </a>
+        </div>
+        @if (!Model.Any())
+        {
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> Bekleyen güncelleme talebi bulunmamaktadır.
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-striped align-middle">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Tur</th>
+                            <th>Mevcut Tarih</th>
+                            <th>Talep Tarihi</th>
+                            <th>Mevcut Kişi</th>
+                            <th>Talep Kişi</th>
+                            <th>Müşteri</th>
+                            <th>Güncelleme Nedeni</th>
+                            <th>Talep Tarihi</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var booking in Model)
+                        {
+                            <tr>
+                                <td>@booking.Id</td>
+                                <td><strong>@booking.TourName</strong></td>
+                                <td>@booking.TourDate.ToString("dd MMM yyyy")</td>
+                                <td>
+                                    @if (booking.RequestedTourDate.HasValue)
+                                    {
+                                        <span class="text-primary">@booking.RequestedTourDate.Value.ToString("dd MMM yyyy")</span>
+                                    }
+                                </td>
+                                <td>@booking.Guests</td>
+                                <td>
+                                    @if (booking.RequestedGuests.HasValue)
+                                    {
+                                        <span class="text-primary">@booking.RequestedGuests.Value</span>
+                                    }
+                                </td>
+                                <td>@booking.CustomerName</td>
+                                <td>
+                                    <small class="text-muted">@(booking.UpdateRequestReason ?? "Neden belirtilmemiş")</small>
+                                </td>
+                                <td>
+                                    @if (booking.UpdateRequestedAt.HasValue)
+                                    {
+                                        @booking.UpdateRequestedAt.Value.ToString("dd MMM yyyy HH:mm")
+                                    }
+                                </td>
+                                <td class="text-end">
+                                    <button type="button" class="btn btn-sm btn-outline-primary" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#bookingModal"
+                                            onclick="loadBookingDetails(@booking.Id)">
+                                        <i class="bi bi-eye"></i> Detay
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-success" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#approveModal"
+                                            data-booking-id="@booking.Id"
+                                            data-booking-name="@booking.TourName">
+                                        <i class="bi bi-check-circle"></i> Onayla
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-danger" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#rejectModal"
+                                            data-booking-id="@booking.Id">
+                                        <i class="bi bi-x-circle"></i> Reddet
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</section>
+
+<!-- Rezervasyon Detay Modal -->
+<div class="modal fade" id="bookingModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div id="bookingDetailsContent">
+                <!-- İçerik AJAX ile yüklenecek -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Onaylama Modal -->
+<div class="modal fade" id="approveModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">Güncelleme Talebini Onayla</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="approveForm" method="post">
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> Bu güncelleme talebini onayladığınızda rezervasyon güncellenecektir.
+                    </div>
+                    <div class="mb-3">
+                        <label for="approveAdminResponse" class="form-label">Admin Notu (Opsiyonel)</label>
+                        <textarea id="approveAdminResponse" name="adminResponse" class="form-control" rows="3" placeholder="Müşteriye gönderilecek mesaj..."></textarea>
+                        <small class="text-muted">Bu mesaj müşteriye bildirim olarak gönderilecektir.</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-circle"></i> Onayla
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Reddetme Modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Güncelleme Talebini Reddet</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="rejectForm" method="post">
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i> Bu güncelleme talebini reddettiğinizde rezervasyon değişmeyecektir.
+                    </div>
+                    <div class="mb-3">
+                        <label for="rejectAdminResponse" class="form-label">Red Nedeni <span class="text-danger">*</span></label>
+                        <textarea id="rejectAdminResponse" name="adminResponse" class="form-control" rows="3" required placeholder="Red nedeninizi açıklayın..."></textarea>
+                        <small class="text-muted">Bu neden müşteriye bildirim olarak gönderilecektir.</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-x-circle"></i> Reddet
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function loadBookingDetails(bookingId) {
+            $.get('@Url.Action("BookingDetails", "Admin")', { id: bookingId }, function(data) {
+                $('#bookingDetailsContent').html(data);
+            });
+        }
+        
+        // Onaylama modal için
+        var approveModal = document.getElementById('approveModal');
+        if (approveModal) {
+            approveModal.addEventListener('show.bs.modal', function (event) {
+                var button = event.relatedTarget;
+                var bookingId = button.getAttribute('data-booking-id');
+                var form = document.getElementById('approveForm');
+                form.action = '@Url.Action("ApproveUpdate", "Admin")?id=' + bookingId;
+                document.getElementById('approveAdminResponse').value = '';
+            });
+        }
+        
+        // Reddetme modal için
+        var rejectModal = document.getElementById('rejectModal');
+        if (rejectModal) {
+            rejectModal.addEventListener('show.bs.modal', function (event) {
+                var button = event.relatedTarget;
+                var bookingId = button.getAttribute('data-booking-id');
+                var form = document.getElementById('rejectForm');
+                form.action = '@Url.Action("RejectUpdate", "Admin")?id=' + bookingId;
+                document.getElementById('rejectAdminResponse').value = '';
+            });
+        }
+    </script>
+}
+

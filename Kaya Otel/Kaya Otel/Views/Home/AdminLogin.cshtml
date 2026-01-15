@@ -4,14 +4,14 @@
 
 <h2>Admin Girişi</h2>
 
-<form asp-action="Login" method="post">
+<form asp-action="Login" method="post" autocomplete="off">
     <div>
         <label>Kullanıcı Adı</label>
         <input type="text" name="UserName" />
     </div>
     <div>
         <label>Şifre</label>
-        <input type="Password" name="Password" />
+        <input type="Password" name="Password" autocomplete="off" value="" />
     </div>
     <button type="submit">Giriş</button>
 </form>

@@ -6,45 +6,159 @@
 
 <section class="py-5">
     <div class="container">
-        <h1 class="h4 mb-4">Rezervasyonlar</h1>
-        <div class="table-responsive">
-            <table class="table table-striped align-middle">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Tur</th>
-                        <th>Tarih</th>
-                        <th>Müşteri</th>
-                        <th>Kişi</th>
-                        <th>Kapora</th>
-                        <th>Durum</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var booking in Model)
-                    {
-                        <tr>
-                            <td>@booking.Id</td>
-                            <td>@booking.TourName</td>
-                            <td>@booking.TourDate.ToString("dd MMM yyyy")</td>
-                            <td>@booking.CustomerName</td>
-                            <td>@booking.Guests</td>
-                            <td>@booking.DepositAmount.ToString("C0")</td>
-                            <td>
-                                @if (booking.IsDepositPaid)
-                                {
-                                    <span class="badge bg-success">Kapora ödendi</span>
-                                }
-                                else
-                                {
-                                    <span class="badge bg-warning text-dark">Ödeme bekleniyor</span>
-                                }
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle"></i> @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle"></i> @TempData["ErrorMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h4 mb-0">Aktif Rezervasyonlar</h1>
+            <a asp-action="CancelledBookings" class="btn btn-outline-secondary">
+                <i class="bi bi-x-circle"></i> İptal Edilen Rezervasyonlar
+            </a>
         </div>
+        @if (!Model.Any())
+        {
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> Aktif rezervasyon bulunmamaktadır.
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-striped align-middle">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Tur</th>
+                            <th>Tarih</th>
+                            <th>Müşteri</th>
+                            <th>Kişi</th>
+                            <th>Kapora</th>
+                            <th>Durum</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var booking in Model)
+                        {
+                            <tr>
+                                <td>@booking.Id</td>
+                                <td>@booking.TourName</td>
+                                <td>@booking.TourDate.ToString("dd MMM yyyy")</td>
+                                <td>@booking.CustomerName</td>
+                                <td>@booking.Guests</td>
+                                <td>@booking.DepositAmount.ToString("C0")</td>
+                                <td>
+                                    @if (booking.TourDate.Date <= DateTime.Today.Date)
+                                    {
+                                        <span class="badge bg-info">Tur Yapıldı</span>
+                                    }
+                                    else if (booking.IsDepositPaid)
+                                    {
+                                        <span class="badge bg-success">Kapora ödendi</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning text-dark">Ödeme bekleniyor</span>
+                                    }
+                                </td>
+                                <td class="text-end">
+                                    <button type="button" class="btn btn-sm btn-outline-primary" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#bookingModal"
+                                            onclick="loadBookingDetails(@booking.Id)">
+                                        <i class="bi bi-eye"></i> Detay
+                                    </button>
+                                    @if (booking.TourDate.Date > DateTime.Today.Date)
+                                    {
+                                        <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#cancelReasonModal"
+                                                data-booking-id="@booking.Id">
+                                            <i class="bi bi-x-circle"></i> İptal
+                                        </button>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
     </div>
 </section>
+
+<!-- Rezervasyon Detay Modal -->
+<div class="modal fade" id="bookingModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div id="bookingDetailsContent">
+                <!-- İçerik AJAX ile yüklenecek -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- İptal Nedeni Modal -->
+<div class="modal fade" id="cancelReasonModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Rezervasyon İptal Et</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="cancelBookingForm" method="post">
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i> Bu rezervasyonu iptal etmek istediğinizden emin misiniz?
+                    </div>
+                    <div class="mb-3">
+                        <label for="cancellationReason" class="form-label">İptal Nedeni <span class="text-danger">*</span></label>
+                        <textarea id="cancellationReason" name="reason" class="form-control" rows="4" required placeholder="İptal nedenini açıklayın..."></textarea>
+                        <small class="text-muted">Bu neden müşteriye bildirim olarak gönderilecektir.</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-x-circle"></i> İptal Et
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function loadBookingDetails(bookingId) {
+            $.get('@Url.Action("BookingDetails", "Admin")', { id: bookingId }, function(data) {
+                $('#bookingDetailsContent').html(data);
+            });
+        }
+        
+        // İptal nedeni modal için
+        var cancelReasonModal = document.getElementById('cancelReasonModal');
+        if (cancelReasonModal) {
+            cancelReasonModal.addEventListener('show.bs.modal', function (event) {
+                var button = event.relatedTarget;
+                var bookingId = button.getAttribute('data-booking-id');
+                var form = document.getElementById('cancelBookingForm');
+                form.action = '@Url.Action("CancelBooking", "Admin")?id=' + bookingId;
+                document.getElementById('cancellationReason').value = '';
+            });
+        }
+    </script>
+}
+
 

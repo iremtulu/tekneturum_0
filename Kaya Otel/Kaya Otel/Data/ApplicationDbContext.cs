@@ -11,12 +11,15 @@ namespace Kaya_Otel.Data
         }
 
         public DbSet<Tour> Tours { get; set; }
+        public DbSet<DeletedTour> DeletedTours { get; set; }
         public DbSet<Booking> Bookings { get; set; }
+        public DbSet<CancelledBooking> CancelledBookings { get; set; }
         public DbSet<Payment> Payments { get; set; }
         public DbSet<Admin> Admins { get; set; }
         public DbSet<user> Users { get; set; }
         public DbSet<Room> Rooms { get; set; }
         public DbSet<Reservation> Reservations { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -33,6 +36,34 @@ namespace Kaya_Otel.Data
                 entity.Property(e => e.ImageUrl).HasMaxLength(500);
             });
 
+            // DeletedTour yapılandırması
+            modelBuilder.Entity<DeletedTour>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.Category).HasMaxLength(100);
+                entity.Property(e => e.Description).HasMaxLength(1000);
+                entity.Property(e => e.PricePerPerson).HasColumnType("decimal(18,2)");
+                entity.Property(e => e.ImageUrl).HasMaxLength(500);
+                entity.Property(e => e.DeletedAt).IsRequired();
+                entity.Property(e => e.DeletedBy).HasMaxLength(100);
+            });
+
+            // CancelledBooking yapılandırması
+            modelBuilder.Entity<CancelledBooking>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.TourName).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.CustomerName).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.Email).HasMaxLength(200);
+                entity.Property(e => e.Phone).HasMaxLength(50);
+                entity.Property(e => e.TotalAmount).HasColumnType("decimal(18,2)");
+                entity.Property(e => e.DepositAmount).HasColumnType("decimal(18,2)");
+                entity.Property(e => e.CancelledAt).IsRequired();
+                entity.Property(e => e.CancelledBy).HasMaxLength(100);
+                entity.Property(e => e.CancellationReason).HasMaxLength(500);
+            });
+
             // Booking yapılandırması
             modelBuilder.Entity<Booking>(entity =>
             {
@@ -43,12 +74,20 @@ namespace Kaya_Otel.Data
                 entity.Property(e => e.Phone).HasMaxLength(50);
                 entity.Property(e => e.TotalAmount).HasColumnType("decimal(18,2)");
                 entity.Property(e => e.DepositAmount).HasColumnType("decimal(18,2)");
+                entity.Property(e => e.UserId).IsRequired(false);
+                entity.Property(e => e.CancellationRequestReason).HasMaxLength(500);
                 
                 // Foreign key ilişkisi (TourId)
                 entity.HasOne<Tour>()
                     .WithMany()
                     .HasForeignKey(e => e.TourId)
                     .OnDelete(DeleteBehavior.Restrict);
+                
+                // Foreign key ilişkisi (UserId) - opsiyonel
+                entity.HasOne<user>()
+                    .WithMany()
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.SetNull);
             });
 
             // Payment yapılandırması
@@ -71,17 +110,29 @@ namespace Kaya_Otel.Data
             modelBuilder.Entity<Admin>(entity =>
             {
                 entity.HasKey(e => e.Id);
-                entity.Property(e => e.UserName).IsRequired().HasMaxLength(100);
+                // Email ve Name kolonları veritabanında yoksa hata vermemesi için opsiyonel yapıyoruz
+                // Program.cs'de bu kolonlar otomatik eklenecek
+                entity.Property(e => e.Name).HasMaxLength(200);
+                entity.Property(e => e.Email).HasMaxLength(200);
+                entity.Property(e => e.UserName).HasMaxLength(100);
                 entity.Property(e => e.Sifre).IsRequired().HasMaxLength(200);
-                entity.HasIndex(e => e.UserName).IsUnique();
+                // Index'i sadece kolon varsa oluştur
+                entity.HasIndex(e => e.Email).IsUnique();
+                entity.Property(e => e.CreatedAt);
             });
 
             // User yapılandırması
             modelBuilder.Entity<user>(entity =>
             {
                 entity.HasKey(e => e.Id);
-                entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
+                // Email ve Name kolonları veritabanında yoksa hata vermemesi için opsiyonel yapıyoruz
+                // Program.cs'de bu kolonlar otomatik eklenecek
+                entity.Property(e => e.Name).HasMaxLength(200);
+                entity.Property(e => e.Email).HasMaxLength(200);
                 entity.Property(e => e.Password).IsRequired().HasMaxLength(200);
+                // Index'i sadece kolon varsa oluştur
+                entity.HasIndex(e => e.Email).IsUnique();
+                entity.Property(e => e.CreatedAt);
             });
 
             // Room yapılandırması
@@ -92,18 +143,37 @@ namespace Kaya_Otel.Data
                 entity.Property(e => e.Price).HasColumnType("decimal(18,2)");
             });
 
-            // Reservation yapılandırması
-            modelBuilder.Entity<Reservation>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-                entity.Property(e => e.RoomName).HasMaxLength(200);
-                entity.Property(e => e.Price).HasColumnType("decimal(18,2)");
-                entity.Property(e => e.TotalPrice).HasColumnType("decimal(18,2)");
-            });
+                // Reservation yapılandırması
+                modelBuilder.Entity<Reservation>(entity =>
+                {
+                    entity.HasKey(e => e.Id);
+                    entity.Property(e => e.RoomName).HasMaxLength(200);
+                    entity.Property(e => e.Price).HasColumnType("decimal(18,2)");
+                    entity.Property(e => e.TotalPrice).HasColumnType("decimal(18,2)");
+                });
+
+                // Notification yapılandırması
+                modelBuilder.Entity<Notification>(entity =>
+                {
+                    entity.HasKey(e => e.Id);
+                    entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
+                    entity.Property(e => e.Message).IsRequired().HasMaxLength(1000);
+                    entity.Property(e => e.Type).HasMaxLength(50);
+                    entity.Property(e => e.CancellationReason).HasMaxLength(500);
+                    entity.Property(e => e.CreatedAt).IsRequired();
+                });
 
             // Seed data - İlk admin kullanıcısı
             modelBuilder.Entity<Admin>().HasData(
-                new Admin { Id = 1, UserName = "admin", Sifre = "123" }
+                new Admin 
+                { 
+                    Id = 1, 
+                    Name = "Admin",
+                    Email = "admin@kekovatur.com",
+                    UserName = "admin", 
+                    Sifre = "123",
+                    CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+                }
             );
 
             // Seed data - İlk turlar

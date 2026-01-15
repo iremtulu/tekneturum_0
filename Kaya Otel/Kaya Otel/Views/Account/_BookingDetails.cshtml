@@ -1,0 +1,132 @@
+@model Kaya_Otel.Models.Booking
+
+<div class="modal-header">
+    <h5 class="modal-title"><i class="bi bi-info-circle"></i> Rezervasyon Detayları</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+<div class="modal-body">
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <strong><i class="bi bi-hash"></i> Rezervasyon ID:</strong>
+            <p class="ms-3">@Model.Id</p>
+        </div>
+        <div class="col-md-6 mb-3">
+            <strong><i class="bi bi-map"></i> Tur Adı:</strong>
+            <p class="ms-3">@Model.TourName</p>
+        </div>
+        <div class="col-md-6 mb-3">
+            <strong><i class="bi bi-calendar"></i> Tur Tarihi:</strong>
+            <p class="ms-3">@Model.TourDate.ToString("dd MMMM yyyy dddd", new System.Globalization.CultureInfo("tr-TR"))</p>
+        </div>
+        <div class="col-md-6 mb-3">
+            <strong><i class="bi bi-people"></i> Kişi Sayısı:</strong>
+            <p class="ms-3">@Model.Guests kişi</p>
+        </div>
+        <hr />
+        <div class="col-12 mb-3">
+            <h6 class="text-primary"><i class="bi bi-person"></i> Müşteri Bilgileri</h6>
+        </div>
+        <div class="col-md-6 mb-3">
+            <strong><i class="bi bi-person-badge"></i> Ad Soyad:</strong>
+            <p class="ms-3">@Model.CustomerName</p>
+        </div>
+        <div class="col-md-6 mb-3">
+            <strong><i class="bi bi-telephone"></i> Telefon:</strong>
+            <p class="ms-3"><a href="tel:@Model.Phone" class="text-decoration-none">@Model.Phone</a></p>
+        </div>
+        <div class="col-md-6 mb-3">
+            <strong><i class="bi bi-envelope"></i> E-posta:</strong>
+            <p class="ms-3"><a href="mailto:@Model.Email" class="text-decoration-none">@Model.Email</a></p>
+        </div>
+        <hr />
+        <div class="col-12 mb-3">
+            <h6 class="text-primary"><i class="bi bi-credit-card"></i> Ödeme Bilgileri</h6>
+        </div>
+        <div class="col-md-6 mb-3">
+            <strong><i class="bi bi-cash-stack"></i> Tur Fiyatı:</strong>
+            <p class="ms-3">@Model.TotalAmount.ToString("C0")</p>
+        </div>
+        <div class="col-md-6 mb-3">
+            <strong><i class="bi bi-cash"></i> Kapora Tutarı:</strong>
+            <p class="ms-3">@Model.DepositAmount.ToString("C0")</p>
+        </div>
+        <div class="col-md-6 mb-3">
+            <strong><i class="bi bi-check-circle"></i> Ödeme Durumu:</strong>
+            <p class="ms-3">
+                @if (Model.IsDepositPaid)
+                {
+                    <span class="badge bg-success">Kapora Ödendi</span>
+                }
+                else
+                {
+                    <span class="badge bg-warning text-dark">Ödeme Bekleniyor</span>
+                }
+            </p>
+        </div>
+        <div class="col-md-6 mb-3">
+            <strong><i class="bi bi-clock"></i> Rezervasyon Tarihi:</strong>
+            <p class="ms-3">@Model.CreatedAt.ToString("dd MMMM yyyy HH:mm", new System.Globalization.CultureInfo("tr-TR"))</p>
+        </div>
+        
+        @* İptal edilmiş rezervasyonlar için iade bilgileri *@
+        @if (ViewBag.IsCancelled == true && ViewBag.CancelledBooking != null)
+        {
+            var cancelledBooking = ViewBag.CancelledBooking as Kaya_Otel.Models.CancelledBooking;
+            <hr />
+            <div class="col-12 mb-3">
+                <div class="alert alert-info">
+                    <h6 class="alert-heading"><i class="bi bi-info-circle"></i> İptal Bilgisi</h6>
+                    <p class="mb-2">
+                        <strong>Kaporanız banka politikanıza bağlı olarak 3 ila 7 gün içerisinde iade edilecektir.</strong>
+                    </p>
+                    <p class="mb-0">
+                        <strong>İade Tutar:</strong> <span class="text-success fw-bold">@cancelledBooking.DepositAmount.ToString("C0")</span>
+                    </p>
+                    @if (!string.IsNullOrEmpty(cancelledBooking.CancellationReason))
+                    {
+                        <p class="mb-0 mt-2">
+                            <strong>İptal Nedeni:</strong> @cancelledBooking.CancellationReason
+                        </p>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+        <i class="bi bi-x"></i> Kapat
+    </button>
+    @if (ViewBag.IsCancelled == true)
+    {
+        <span class="badge bg-danger text-white p-2">
+            <i class="bi bi-x-circle"></i> Tur İptal Edildi
+        </span>
+    }
+    else if (Model.CancellationRequested)
+    {
+        <span class="badge bg-warning text-dark p-2">
+            <i class="bi bi-clock-history"></i> İptal Talebi Bekleniyor
+            @if (!string.IsNullOrEmpty(Model.CancellationRequestReason))
+            {
+                <br /><small>Neden: @Model.CancellationRequestReason</small>
+            }
+        </span>
+    }
+    else if (Model.TourDate >= DateTime.Today)
+    {
+        <button type="button" class="btn btn-warning" data-bs-dismiss="modal" 
+                data-bs-toggle="modal" 
+                data-bs-target="#cancelRequestModal"
+                data-booking-id="@Model.Id">
+            <i class="bi bi-send"></i> İptal Talebi Gönder
+        </button>
+    }
+    else
+    {
+        <span class="badge bg-info text-white p-2">
+            <i class="bi bi-check-circle"></i> Tur Gerçekleşti
+        </span>
+    }
+</div>
+
